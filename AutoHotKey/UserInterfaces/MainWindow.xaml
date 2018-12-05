@@ -1,0 +1,76 @@
+﻿<Window x:Class="AutoHotKey.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AutoHotKey"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="470" Width="660"
+        ResizeMode="CanMinimize">
+    
+    <Grid>
+        <ScrollViewer 
+            Name="scrViewerProfiles"
+            HorizontalAlignment="Left" 
+            Height="441" 
+            VerticalAlignment="Top" 
+            Width="330"           
+            />
+        <StackPanel
+              Visibility="Hidden"
+              HorizontalAlignment="Left" 
+              Height="441" Margin="330,0,0,0" 
+              VerticalAlignment="Top" 
+              Width="324"
+              Name="sProfileContent">
+
+            <TextBox Name="tbCurrentProfile"
+                     Text="Profile selected : "
+                     HorizontalAlignment ="Center"
+                     FontSize="25"
+                     Margin="0, 30, 0, 0" BorderThickness="0,3,0,0" FontWeight="Bold"/>
+
+            <Button Name="btnEditProfile"
+                    Content="Edit Profile" 
+                    Width="250" Height="35" 
+                    Margin="0, 200, 0 ,0"
+                    FontSize="20"
+                    />
+
+            <Button Name="btnDeleteProfile"
+                    Content="Delete Profile" 
+                    Width="250" Height="35" 
+                    Margin="0, 15, 0 ,0"
+                    FontSize="20"
+                    />
+        </StackPanel>
+    </Grid>
+</Window>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
