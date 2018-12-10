@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="MacroSetting" Height="470" Width="660">
     <Grid>
+               
         <ScrollViewer 
             Name="scrViewerMacroList"
             HorizontalAlignment="Left" 
@@ -14,45 +15,190 @@
             VerticalAlignment="Top" 
             Width="330"           
             />
+
+        <ScrollViewer 
+            Name="scrViewerClickAvoider"
+            HorizontalAlignment="Left" 
+            Height="441" 
+            Opacity="0"
+            Visibility="Hidden"
+            VerticalAlignment="Top" 
+            Width="330"           
+            />
         <StackPanel
-              Visibility="Visible"
+              Visibility="Hidden"
               HorizontalAlignment="Left" 
               Height="441" Margin="330,0,0,0" 
               VerticalAlignment="Top" 
               Width="324"
-              Name="sProfileSetting">
+              Name="sHotKeyClicked">
 
-            <TextBox Name="tbCurrentHotkey"
-                     Text="Hotkey selected : "
+            <Label Name="labelCurrentHotkey"
+                     Content="Hotkey selected : "
                      HorizontalAlignment ="Center"
                      FontSize="25"
                      Margin="0, 30, 0, 0" BorderThickness="0,3,0,0" FontWeight="Bold"/>
-            
-            <TextBox x:Name="tbCurrent"
-                Text="Currnet Setting : "
-                HorizontalAlignment ="Left"
-                FontSize="18"
-                Margin="10,50,51,0" BorderThickness="0,0,0,0" FontWeight="Bold"/>
-            
-            <TextBox x:Name="tbNew"
-                Text="New Setting : "
-                HorizontalAlignment ="Left"
-                FontSize="18"
-                Margin="10,30,51,0" BorderThickness="0,0,0,0" FontWeight="Bold"/>
 
-            <Button Name="btnEditProfile"
-                    Content="Edit Profile" 
+            <Label x:Name="labelCurrentToDo"
+                Content="Currnet Setting : "
+                HorizontalAlignment ="Left"
+                FontSize="18"
+                Margin="10,100,51,0" BorderThickness="0,0,0,0" FontWeight="Bold"/>
+
+            <Button Name="btnEditHotKey"
+                    Content="Edit Hotkey" 
                     Width="250" Height="35" 
-                    Margin="0, 200, 0 ,0"
+                    Margin="0, 100, 0 ,0"
                     FontSize="20"
                     />
 
-            <Button Name="btnDeleteProfile"
-                    Content="Delete Profile" 
+            <Button Name="btnDeleteHotkey"
+                    Content="Delete Hotkey" 
                     Width="250" Height="35" 
                     Margin="0, 15, 0 ,0"
-                    FontSize="20"
+                    FontSize="20" Click="OnDeleteHotkeyClicked"
                     />
+        </StackPanel>
+
+        <StackPanel
+              Visibility="Hidden"
+              HorizontalAlignment="Left" 
+              Height="441" Margin="330,0,0,0" 
+              VerticalAlignment="Top" 
+              Width="324"
+              Name="sHotKeySetting">
+
+            <StackPanel>
+                <TextBox 
+                    Text=" Combination"
+                    FontSize="18"
+                    Margin="0, 30, 0, 0" BorderThickness="0,0,0,1" TextDecorations="{x:Null}"
+                />
+
+                <StackPanel 
+                    Orientation="Horizontal"
+                    Margin="0, 8, 0, 0"
+                    >
+                    <CheckBox x:Name="cbNoMod" Content="NoMod"
+                              Margin="7, 0 , 0,0" 
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbControl" Content="Control"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbAlt" Content="Alt"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbShift" Content="Shift"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbWindow" Content="Window"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+
+                </StackPanel>
+            
+                <TextBox 
+                    Text=" Key"
+                    FontSize="18"
+                    Margin="0, 10, 0, 0" BorderThickness="0,0,0,1"
+                    />
+                <StackPanel 
+                    Orientation="Horizontal"
+                    Margin="0, 8, 0, 0"
+                    >
+
+                    <Label
+                        Content="키를 입력하세요"
+                        FontSize="16"
+                        />
+
+                    <TextBox
+                        Name="tbKeySet"
+                        MaxLength="1"
+                        TextWrapping="Wrap" Width="65" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"
+                        KeyDown = "OnKeyInput"
+                        />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel              
+                Margin="0, 20, 0, 0">
+                
+                <TextBox 
+                Text=" Combination Out"
+                FontSize="18"
+                Margin="0, 30, 0, 0" BorderThickness="0,0,0,1"
+                />
+
+                <StackPanel 
+                    Orientation="Horizontal"
+                    Margin="0, 8, 0, 0"
+                    >
+                    <CheckBox x:Name="cbNoModToDo" Content="NoMod"
+                              Margin="7, 0 , 0,0" 
+                              Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
+                    <CheckBox x:Name="cbControlToDo" Content="Control"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
+                    <CheckBox x:Name="cbAltToDo" Content="Alt"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
+                    <CheckBox x:Name="cbShiftToDo" Content="Shift"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
+                    <CheckBox x:Name="cbWindowToDo" Content="Window"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
+
+                </StackPanel>
+
+                <TextBox 
+                    Text=" Key Out"
+                    FontSize="18"
+                    Margin="0, 10, 0, 0" BorderThickness="0,0,0,1"
+                    />
+                <StackPanel 
+                    Orientation="Horizontal"
+                    Margin="0, 8, 0, 0"
+                    >
+
+                    <Label
+                        Content="키를 입력하세요"
+                        FontSize="16"
+                        />
+
+                    <TextBox
+                        Name="tbKeySetToDo"
+                        MaxLength="1"
+                        TextWrapping="Wrap" Width="65" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"
+                        KeyDown = "OnKeyInput"
+                        />
+                </StackPanel>
+            </StackPanel>
+
+            <Button
+                Name="btnOk"
+                Content="Ok"
+                Margin="0, 15, 0 ,0"
+                Width="100"
+                Height="30" Click="OnOkClicked"
+                />
+            <Button
+                Name="btnCancle"
+                Content="Cancel"
+                Margin="0, 10, 0 ,0"
+                Width="100"
+                Height="30" Click="OnCancelClicked"
+                />
+
+
+
+
+
         </StackPanel>
 
     </Grid>

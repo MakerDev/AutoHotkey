@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:AutoHotKey"
         mc:Ignorable="d"
         Title="MainWindow" Height="470" Width="660"
-        ResizeMode="CanMinimize">
+        ResizeMode="CanMinimize"
+        Name="xWindowMain">
     
     <Grid>
         <ScrollViewer 
@@ -34,14 +35,15 @@
                     Content="Edit Profile" 
                     Width="250" Height="35" 
                     Margin="0, 200, 0 ,0"
-                    FontSize="20"
+                    FontSize="20" 
+                    Click="OnEditProfileCliked"
                     />
 
             <Button Name="btnDeleteProfile"
                     Content="Delete Profile" 
                     Width="250" Height="35" 
                     Margin="0, 15, 0 ,0"
-                    FontSize="20"
+                    FontSize="20" Click="OnDeleteProfileClicked"
                     />
         </StackPanel>
     </Grid>
