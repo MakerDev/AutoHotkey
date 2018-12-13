@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AutoHotKey.UserInterfaces"
         mc:Ignorable="d"
-        Title="MacroSetting" Height="470" Width="660">
+        Title="MacroSetting" Height="480" Width="660">
     <Grid>
-               
+
         <ScrollViewer 
             Name="scrViewerMacroList"
             HorizontalAlignment="Left" 
@@ -43,7 +43,19 @@
                 Content="Currnet Setting : "
                 HorizontalAlignment ="Left"
                 FontSize="18"
-                Margin="10,100,51,0" BorderThickness="0,0,0,0" FontWeight="Bold"/>
+                Margin="10,60,51,0" BorderThickness="0,0,0,0" FontWeight="Bold"/>
+
+
+
+
+            <TextBox 
+                x:Name="xTextBoxExplanation"
+                BorderThickness="1,2,2,2"
+                Margin="12,20,12,0" Width="300"
+                Text="설명을 입력하세요" Height="43"  
+                TextWrapping="Wrap" TextChanged="xTextBoxExplanation_TextChanged"
+                />
+
 
             <Button Name="btnEditHotKey"
                     Content="Edit Hotkey" 
@@ -96,7 +108,7 @@
                               Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
 
                 </StackPanel>
-            
+
                 <TextBox 
                     Text=" Key"
                     FontSize="18"
@@ -125,7 +137,7 @@
 
             <StackPanel              
                 Margin="0, 20, 0, 0">
-                
+
                 <TextBox 
                 Text=" Combination Out"
                 FontSize="18"

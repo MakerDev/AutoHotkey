@@ -53,9 +53,9 @@ namespace AutoHotKey.UserInterfaces
 
         private void EndEditting(object sender, System.ComponentModel.CancelEventArgs e)
         {
-           
+
             HotKeyController.Instance.EndEditting();
-            
+
             //throw new NotImplementedException();
 
             //TODO:편집 창 종료 시 할 일, 세팅 창 켤 때 프로필 창 끄고 세팅 창 끌 때 프로필 창 다시 열기
@@ -72,6 +72,7 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnCancelClicked(object sender, RoutedEventArgs e)
         {
+            ClearHotkeySettingOptions();
             BackToHotkeySelectionViewInternal();
         }
 
@@ -118,21 +119,71 @@ namespace AutoHotKey.UserInterfaces
             addButton.Click += new RoutedEventHandler(OnAddClicked);
 
             list.Children.Add(addButton);
+
+
+            ClearHotkeySettingOptions();
         }
+
+        private void ClearHotkeySettingOptions()
+        {
+            cbNoMod.IsChecked = false;
+            cbAlt.IsChecked = false;
+            cbControl.IsChecked = false;
+            cbWindow.IsChecked = false;
+            cbShift.IsChecked = false;
+
+            cbNoModToDo.IsChecked = false;
+            cbAltToDo.IsChecked = false;
+            cbControlToDo.IsChecked = false;
+            cbWindowToDo.IsChecked = false;
+            cbShiftToDo.IsChecked = false;
+
+            tbKeySet.Text = "";
+            tbKeySetToDo.Text = "";
+
+        }
+
 
         private void OnHotkeyClicked(object sender, RoutedEventArgs e)
         {
             //리스트의 핫키가 눌리면 우측에 핫 키 정보 및 수정 여부 묻기
             Button button = sender as Button;
             string btnName = (string)button.Content;
-            mCurrentHotkeySelected = int.Parse(btnName[0].ToString());
+
+            int digit = GetHotKeyNumberFromButtonNameInternal(btnName);
+
+            mCurrentHotkeySelected = int.Parse(btnName.Substring(0, digit).ToString());
+
 
             HotkeyPair currentHotkey = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1);
             labelCurrentHotkey.Content = currentHotkey.Trigger.ToString();
             labelCurrentToDo.Content = "핫 키:";
             labelCurrentToDo.Content += currentHotkey.Action.ToString();
 
+            xTextBoxExplanation.Text = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1).Explanation;
+
             sHotKeyClicked.Visibility = Visibility.Visible;
+        }
+
+        private int GetHotKeyNumberFromButtonNameInternal(string name)
+        {
+            //숫자가 두 자리 이상일때도 처리하기 위해
+            int digit = 0;
+
+            for (int i = 0; i < 3; i++)
+            {
+                //만약 i번째 글자가 숫자라면 자릿 수 하나씩 증가
+                if (int.TryParse(name[i].ToString(), out int temp))
+                {
+                    digit++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return digit;
         }
 
         private void OnCheckBoxChanged(object sender, RoutedEventArgs e)
@@ -178,7 +229,7 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnDeleteHotkeyClicked(object sender, RoutedEventArgs e)
         {
-            if (mCurrentHotkeySelected==0)
+            if (mCurrentHotkeySelected == 0)
             {
                 MessageBox.Show("핫키를 선택하세요.");
                 return;
@@ -192,11 +243,6 @@ namespace AutoHotKey.UserInterfaces
             mCurrentHotkeySelected = 0;
             sHotKeyClicked.Visibility = Visibility.Hidden;
             LoadHotkeyButtonList();
-        }
-
-        private void OnSetkeyClicked(object sender, RoutedEventArgs e)
-        {
-
         }
 
         private void OnOkClicked(object sender, RoutedEventArgs e)
@@ -272,5 +318,14 @@ namespace AutoHotKey.UserInterfaces
             }
         }
 
+        private void xTextBoxExplanation_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (mCurrentHotkeySelected == 0)
+                return;
+
+            //현재 선택된 버튼을 통해           
+            string txt = xTextBoxExplanation.Text;
+            HotKeyController.Instance.SetHotkeyExplanation(mCurrentHotkeySelected, txt);
+        }
     }
 }

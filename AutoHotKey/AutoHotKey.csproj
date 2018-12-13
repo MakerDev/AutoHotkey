@@ -58,6 +58,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="UserInterfaces\InformationWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserInterfaces\MacroSetting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -74,6 +78,9 @@
     <Compile Include="MacroControllers\HotkeyPair.cs" />
     <Compile Include="MacroControllers\HotKeyProfile.cs" />
     <Compile Include="MacroControllers\HotkeyController.cs" />
+    <Compile Include="UserInterfaces\InformationWindow.xaml.cs">
+      <DependentUpon>InformationWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserInterfaces\MacroSetting.xaml.cs">
       <DependentUpon>MacroSetting.xaml</DependentUpon>
     </Compile>

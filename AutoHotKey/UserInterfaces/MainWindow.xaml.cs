@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AutoHotKey.MacroControllers;
+using AutoHotKey.UserInterfaces;
 
 namespace AutoHotKey
 {
@@ -29,6 +30,8 @@ namespace AutoHotKey
 
         private int currentProfile = 0; //만약 아무 프로필도 선택되지 않은 상태일때는 0
 
+        private InformationWindow mInfoWindow = null;
+         
 
         public MainWindow()
         {
@@ -43,12 +46,33 @@ namespace AutoHotKey
             scrViewerProfiles.Content = list;
 
             this.Loaded += OnMainWindowLoaded;
+            Closing += OnMainWindowClosing;
+
+
+            mInfoWindow = new InformationWindow();
+            mInfoWindow.ChangeCurrentProfile(0);
+
+            mInfoWindow.Show();
+        }
+
+        private void OnActiveProfileChanged(object sender, EventArgs e)
+        {
+            ProfileChangedCallBackArgs info = e as ProfileChangedCallBackArgs;
+
+            mInfoWindow.ChangeCurrentProfile(info.profile);
+        }
+
+        private void OnMainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            mInfoWindow.Close();
         }
 
         //생성자가 실행되었을 때 발동
         private void OnMainWindowLoaded(object sender, RoutedEventArgs e)
         {
             HotKeyController.Instance.RegisterHelper(this);
+            HotKeyController.Instance.ProfileChanged += OnActiveProfileChanged;
+
         }
 
         //TODO : 만약 프로필 순서 바꾸는 기능을 추가하려면 구현은 파일이름을 바꾸고 다시 로딩하는 걸로 구현하면 됨 
@@ -123,6 +147,12 @@ namespace AutoHotKey
             if(currentProfile==0)
             {
                 MessageBox.Show("프로필을 선택하십시오");
+                return;
+            }
+
+            if(HotKeyController.Instance.IsEdittingProfile())
+            {
+                MessageBox.Show("이미 편집중인 프로필이 있습니다");
                 return;
             }
 

@@ -9,6 +9,8 @@ namespace AutoHotKey.MacroControllers
     [Serializable()]
     public class HotkeyPair
     {
+        public string Explanation = "";
+
         public HotkeyInfo Trigger
         {
             get; private set;

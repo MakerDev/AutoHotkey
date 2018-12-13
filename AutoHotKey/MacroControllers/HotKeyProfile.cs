@@ -6,6 +6,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using WindowsInput.Native;
 
 namespace AutoHotKey.MacroControllers
 {
@@ -17,7 +18,7 @@ namespace AutoHotKey.MacroControllers
         private List<HotkeyPair> hotkeyList = new List<HotkeyPair>();
 
 
-        //0은 성공 1은 중복 2는 오버플로우
+        //0은 성공 1은 중복 2는 오버플로우 3은 체인지키와 겹침
         public int AddNewHotKey(HotkeyPair info)
         {
             if(hotkeyList.Count>=MAXHOTKEY)
@@ -27,6 +28,11 @@ namespace AutoHotKey.MacroControllers
             else if(IsSameHotkeyExists(info.Trigger))
             {
                 return 1;
+            }
+            else if((info.Trigger.Modifier==0 && info.Trigger.Key >= 112 && info.Trigger.Key <= 121)
+                || (info.Trigger.Key == (int)VirtualKeyCode.ESCAPE && info.Trigger.Modifier==0))
+            {
+                return 3;
             }
 
             hotkeyList.Add(info);

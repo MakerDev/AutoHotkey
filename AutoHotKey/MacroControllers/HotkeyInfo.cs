@@ -42,19 +42,19 @@ namespace AutoHotKey.MacroControllers
 
             if ((Modifier & EModifiers.Ctrl) == EModifiers.Ctrl)
             {
-                info += "Ctrl+";
+                info += "Ctrl + ";
             }
             if ((Modifier & EModifiers.Alt) == EModifiers.Alt)
             {
-                info += "Alt+";
+                info += "Alt + ";
             }
             if ((Modifier & EModifiers.Shift) == EModifiers.Shift)
             {
-                info += "Shift+";
+                info += "Shift + ";
             }
             if ((Modifier & EModifiers.Win) == EModifiers.Win)
             {
-                info += "Win+";
+                info += "Win + ";
             }
 
             info += KeyInterop.KeyFromVirtualKey(Key).ToString();
@@ -68,6 +68,7 @@ namespace AutoHotKey.MacroControllers
                 return false;
 
             HotkeyInfo info = obj as HotkeyInfo;
+            
             if (Key == info.Key && Modifier == info.Modifier)
                 return true;
             else
