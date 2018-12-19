@@ -24,7 +24,7 @@ namespace AutoHotKey
     public partial class MainWindow : Window
     {
         private List<Button> buttons = new List<Button>();
-
+        private System.Windows.Forms.NotifyIcon ni;
         private Button addButton;
         private StackPanel list;
 
@@ -53,6 +53,24 @@ namespace AutoHotKey
             mInfoWindow.ChangeCurrentProfile(0);
 
             mInfoWindow.Show();
+
+            ni = new System.Windows.Forms.NotifyIcon();
+            ni.Icon = new System.Drawing.Icon("Main.ico");
+            ni.Visible = true;
+            ni.DoubleClick +=
+                delegate (object sender, EventArgs args)
+                {
+                    this.Show();
+                    this.WindowState = WindowState.Normal;
+                };
+        }
+
+        protected override void OnStateChanged(EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized)
+                this.Hide();
+
+            base.OnStateChanged(e);
         }
 
         private void OnActiveProfileChanged(object sender, EventArgs e)
@@ -64,6 +82,7 @@ namespace AutoHotKey
 
         private void OnMainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            ni.Visible = false;
             mInfoWindow.Close();
         }
 
@@ -75,7 +94,7 @@ namespace AutoHotKey
 
         }
 
-        //TODO : 만약 프로필 순서 바꾸는 기능을 추가하려면 구현은 파일이름을 바꾸고 다시 로딩하는 걸로 구현하면 됨 
+        // : 만약 프로필 순서 바꾸는 기능을 추가하려면 구현은 파일이름을 바꾸고 다시 로딩하는 걸로 구현하면 됨 
         //예를 들면 프로필2와 3의 순서를 바꾸려면 profile2의 이름을 profile3으로, profile3의 이름을 profile2로 바꾸고 다시 로딩하면 됨.
 
 
@@ -157,7 +176,7 @@ namespace AutoHotKey
             }
 
             UserInterfaces.MacroSetting macroSettingWindow = new UserInterfaces.MacroSetting(currentProfile);
-            //TODO:추후에 visibility 옵션 히든으로 조정
+            //:추후에 visibility 옵션 히든으로 조정
             macroSettingWindow.Show();
 
         }
@@ -177,6 +196,61 @@ namespace AutoHotKey
 
             HotKeyController.Instance.DeleteProfile(currentProfile);
             ClearViewInternal();
+        }
+
+
+        private void OnKeyInput(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            ((TextBox)sender).Text = e.Key.ToString();
+
+            //tbKeySet.Text = e.Key.ToString();
+            if (ReferenceEquals(sender, tbKeySet))
+            {
+                //currentKeyIn = int.Parse(KeyInterop.VirtualKeyFromKey(e.Key).ToString());
+            }
+        }
+
+        //TODO : 프로필 키 변경 내용 구현
+        private void OnCheckBoxChanged(object sender, RoutedEventArgs e)
+        {
+            const int VK_SPACE = 0x20;
+            const int VK_DELETE = 0x2E;
+
+            if (ReferenceEquals(sender, cbNoMod) && cbNoMod.IsChecked.Value)
+            {
+                cbAlt.IsChecked = false;
+                cbControl.IsChecked = false;
+                cbWindow.IsChecked = false;
+                cbShift.IsChecked = false;
+            }
+            else
+            {
+                var checkBox = sender as CheckBox;
+                if (checkBox != null && (!ReferenceEquals(sender, xCbDelete) && !ReferenceEquals(sender, xCbSpace)) && checkBox.IsChecked.Value)
+                {
+                    cbNoMod.IsChecked = false;
+                }
+            }
+
+            if (ReferenceEquals(sender, xCbSpace) && xCbSpace.IsChecked.Value)
+            {
+                tbKeySet.Text = "";
+                //currentKeyOut = VK_SPACE;
+                xCbDelete.IsChecked = false;
+            }
+            else if (ReferenceEquals(sender, xCbDelete) && xCbDelete.IsChecked.Value)
+            {
+                tbKeySet.Text = "";
+                //currentKeyOut = VK_DELETE;
+                xCbSpace.IsChecked = false;
+            }
+        }
+
+        private void OnBtnSetProfileChangeKeyClicked(object sender, RoutedEventArgs e)
+        {
+
+
+
         }
     }
 }

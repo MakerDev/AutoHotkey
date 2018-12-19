@@ -18,7 +18,7 @@
             Width="330"           
             />
         <StackPanel
-              Visibility="Hidden"
+              Visibility="Visible"
               HorizontalAlignment="Left" 
               Height="441" Margin="330,0,0,0" 
               VerticalAlignment="Top" 
@@ -26,15 +26,89 @@
               Name="sProfileContent">
 
             <TextBox Name="tbCurrentProfile"
+                     IsReadOnly="True"
                      Text="Profile selected : "
                      HorizontalAlignment ="Center"
                      FontSize="25"
                      Margin="0, 30, 0, 0" BorderThickness="0,3,0,0" FontWeight="Bold"/>
+            <StackPanel
+                Visibility="Hidden">
+                <TextBox 
+                    Text=" Combination"
+                    FontSize="18"
+                    Margin="0, 30, 0, 0" BorderThickness="0,0,0,1" TextDecorations="{x:Null}"
+                />
+
+                <StackPanel 
+                    Orientation="Horizontal"
+                    Margin="0, 8, 0, 0"
+                    >
+                    <CheckBox x:Name="cbNoMod" Content="NoMod"
+                              Margin="7, 0 , 0,0" 
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbControl" Content="Control"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbAlt" Content="Alt"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbShift" Content="Shift"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbWindow" Content="Window"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+
+                </StackPanel>
+
+                <TextBox 
+                    Text=" Key"
+                    FontSize="18"
+                    Margin="0, 10, 0, 0" BorderThickness="0,0,0,1"
+                    />
+                <StackPanel 
+                    Orientation="Horizontal"
+                    Margin="0, 8, 0, 0"
+                    >
+
+                    <Label
+                        Content="키"
+                        FontSize="16"
+                        />
+
+                    <TextBox
+                        Name="tbKeySet"
+                        MaxLength="1"
+                        TextWrapping="Wrap" Width="65" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"
+                        KeyDown = "OnKeyInput"
+                        />
+                    
+                    <CheckBox x:Name="xCbDelete" Content="Delete"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged" 
+                              Height="15"/>
+                    <CheckBox x:Name="xCbSpace" Content="Space"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged" 
+                              Height="15"/>
+
+                </StackPanel>
+            </StackPanel>
+            
+            <Button Name="xBtnSetProfileChangeKey"
+                    Visibility="Hidden"
+                    Content="프로필 변경 키 설정"
+                    Width="250" Height="35"
+                    Margin="0, 10, 0, 0"
+                    FontSize="20" Click="OnBtnSetProfileChangeKeyClicked"
+                    />
 
             <Button Name="btnEditProfile"
                     Content="Edit Profile" 
                     Width="250" Height="35" 
-                    Margin="0, 200, 0 ,0"
+                    Margin="0, 50, 0 ,0"
                     FontSize="20" 
                     Click="OnEditProfileCliked"
                     />

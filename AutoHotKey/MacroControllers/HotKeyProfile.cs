@@ -16,33 +16,33 @@ namespace AutoHotKey.MacroControllers
         public static int MAXHOTKEY = 40;
 
         private List<HotkeyPair> hotkeyList = new List<HotkeyPair>();
-
+        public HotkeyInfo ChangeKey { get; private set; }  //프로필 체인지 키
 
         //0은 성공 1은 중복 2는 오버플로우 3은 체인지키와 겹침
         public int AddNewHotKey(HotkeyPair info)
         {
-            if(hotkeyList.Count>=MAXHOTKEY)
+            if (hotkeyList.Count >= MAXHOTKEY)
             {
                 return 2;
             }
-            else if(IsSameHotkeyExists(info.Trigger))
+            else if (IsSameHotkeyExists(info.Trigger))
             {
                 return 1;
             }
-            else if((info.Trigger.Modifier==0 && info.Trigger.Key >= 112 && info.Trigger.Key <= 121)
-                || (info.Trigger.Key == (int)VirtualKeyCode.ESCAPE && info.Trigger.Modifier==0))
+            else if ((info.Trigger.Modifier == 0 && info.Trigger.Key >= 112 && info.Trigger.Key <= 121)
+                || (info.Trigger.Key == (int)VirtualKeyCode.ESCAPE && info.Trigger.Modifier == 0))
             {
                 return 3;
             }
 
             hotkeyList.Add(info);
-            
+
             return 0;
         }
 
         public HotkeyPair GetHotKeyFromIndex(int index)
         {
-            if(index >= hotkeyList.Count)
+            if (index >= hotkeyList.Count)
             {
                 return null;
             }
@@ -55,7 +55,7 @@ namespace AutoHotKey.MacroControllers
         {
             //직렬화를 이용해 hotkeyList를 저장한다.
             string path = Environment.CurrentDirectory + "/" + name + ".json";
-            if(File.Exists(path))
+            if (File.Exists(path))
             {
                 File.Delete(path);
             }
@@ -98,15 +98,20 @@ namespace AutoHotKey.MacroControllers
 
         public bool IsSameHotkeyExists(HotkeyInfo trriger)
         {
-            foreach(var info in hotkeyList)
+            foreach (var info in hotkeyList)
             {
-                if(info.Trigger.Equals(trriger))
+                if (info.Trigger.Equals(trriger))
                 {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        public void SetChangeKey(HotkeyInfo newChangeKey)
+        {
+
         }
 
         internal List<HotkeyPair> GetHotkeyList()

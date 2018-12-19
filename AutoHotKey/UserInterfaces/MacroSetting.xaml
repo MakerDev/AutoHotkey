@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AutoHotKey.UserInterfaces"
         mc:Ignorable="d"
-        Title="MacroSetting" Height="480" Width="660">
+        Title="MacroSetting" Height="480" Width="670">
     <Grid>
 
         <ScrollViewer 
@@ -83,6 +83,7 @@
             <StackPanel>
                 <TextBox 
                     Text=" Combination"
+                    IsReadOnly="True"
                     FontSize="18"
                     Margin="0, 30, 0, 0" BorderThickness="0,0,0,1" TextDecorations="{x:Null}"
                 />
@@ -106,11 +107,11 @@
                     <CheckBox x:Name="cbWindow" Content="Window"
                               Margin="10, 0 , 0,0"
                               Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
-
                 </StackPanel>
 
                 <TextBox 
-                    Text=" Key"
+                    Text=" Key In"
+                    IsReadOnly="True"
                     FontSize="18"
                     Margin="0, 10, 0, 0" BorderThickness="0,0,0,1"
                     />
@@ -132,6 +133,7 @@
                         VerticalAlignment="Center"
                         KeyDown = "OnKeyInput"
                         />
+
                 </StackPanel>
             </StackPanel>
 
@@ -140,6 +142,7 @@
 
                 <TextBox 
                 Text=" Combination Out"
+                IsReadOnly="True"
                 FontSize="18"
                 Margin="0, 30, 0, 0" BorderThickness="0,0,0,1"
                 />
@@ -168,6 +171,7 @@
 
                 <TextBox 
                     Text=" Key Out"
+                    IsReadOnly="True"
                     FontSize="18"
                     Margin="0, 10, 0, 0" BorderThickness="0,0,0,1"
                     />
@@ -189,6 +193,15 @@
                         VerticalAlignment="Center"
                         KeyDown = "OnKeyInput"
                         />
+
+                    <CheckBox x:Name="xCbDeleteToDo" Content="Delete"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged" 
+                              Height="15"/>
+                    <CheckBox x:Name="xCbSpaceToDo" Content="Space"
+                              Margin="10, 0 , 0,0"
+                              Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged" 
+                              Height="15"/>
                 </StackPanel>
             </StackPanel>
 
@@ -206,11 +219,6 @@
                 Width="100"
                 Height="30" Click="OnCancelClicked"
                 />
-
-
-
-
-
         </StackPanel>
 
     </Grid>

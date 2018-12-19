@@ -76,7 +76,7 @@ namespace AutoHotKey.MacroControllers
                 return false;         
         }
 
-        //TODO : 왜 해시코드도 같이 오버라이드 하며, 이런식으로 오버라이드 가능한 지 공부
+        // : 왜 해시코드도 같이 오버라이드 하며, 이런식으로 오버라이드 가능한 지 공부
         public override int GetHashCode()
         {
             return Key ^ Modifier;

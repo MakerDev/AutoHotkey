@@ -208,22 +208,39 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnToDoCheckBoxChanged(object sender, RoutedEventArgs e)
         {
+            const int VK_SPACE = 0x20;
+            const int VK_DELETE = 0x2E;
+
             if (ReferenceEquals(sender, cbNoModToDo) && cbNoModToDo.IsChecked.Value)
             {
                 cbAltToDo.IsChecked = false;
                 cbControlToDo.IsChecked = false;
                 cbWindowToDo.IsChecked = false;
                 cbShiftToDo.IsChecked = false;
-
             }
             else
             {
                 var checkBox = sender as CheckBox;
-                if (checkBox != null && checkBox.IsChecked.Value)
+                if (checkBox != null && (!ReferenceEquals(sender, xCbDeleteToDo) && !ReferenceEquals(sender, xCbSpaceToDo)) && checkBox.IsChecked.Value)
                 {
                     cbNoModToDo.IsChecked = false;
                 }
             }
+
+            if (ReferenceEquals(sender, xCbSpaceToDo) && xCbSpaceToDo.IsChecked.Value)
+            {
+                tbKeySetToDo.Text = "";
+                currentKeyOut = VK_SPACE;
+                xCbDeleteToDo.IsChecked = false;
+            }
+            else if (ReferenceEquals(sender, xCbDeleteToDo) && xCbDeleteToDo.IsChecked.Value)
+            {
+                tbKeySetToDo.Text = "";
+                currentKeyOut = VK_DELETE;
+                xCbSpaceToDo.IsChecked = false;
+            }
+
+
         }
 
 
@@ -263,7 +280,7 @@ namespace AutoHotKey.UserInterfaces
             }
 
             int count = 0;
-            //만약 키가 빈칸인 경우, NoMOd만 체크되거나 여러가지 조합키가 선택되면 부정.
+            //만약 키가 빈칸인 경우, NoMod만 체크되거나 여러가지 조합키가 선택되면 부정.
             if ((String.IsNullOrEmpty(tbKeySetToDo.Text) || String.IsNullOrWhiteSpace(tbKeySetToDo.Text)) && !cbNoModToDo.IsChecked.Value)
             {
                 if (cbAltToDo.IsChecked.Value) count++;
@@ -310,6 +327,8 @@ namespace AutoHotKey.UserInterfaces
 
         private Button CreateNewHotKeyButton(HotkeyPair info)
         {
+            string newLine = Environment.NewLine;
+
             Button button = new Button();
 
             //버튼이름을 통해서 버튼이 어떤 핫 키를 가리키는 지 알 수 있도록 함.
@@ -317,8 +336,13 @@ namespace AutoHotKey.UserInterfaces
 
             buttonText += info.Trigger.ToString();
 
+            if(!String.IsNullOrEmpty(info.Explanation))
+            {
+                buttonText += (" "+info.Explanation);
+                button.FontSize = 15;
+            }
+
             button.Content = buttonText;
-            button.FontSize = 15;
             button.Width = 330;
             button.Height = 35;
             button.Click += new RoutedEventHandler(OnHotkeyClicked);
@@ -329,6 +353,7 @@ namespace AutoHotKey.UserInterfaces
         private void OnKeyInput(object sender, System.Windows.Input.KeyEventArgs e)
         {
             ((TextBox)sender).Text = e.Key.ToString();
+
             //tbKeySet.Text = e.Key.ToString();
             if (ReferenceEquals(sender, tbKeySet))
             {
@@ -337,6 +362,8 @@ namespace AutoHotKey.UserInterfaces
             else if (ReferenceEquals(sender, tbKeySetToDo))
             {
                 currentKeyOut = int.Parse(KeyInterop.VirtualKeyFromKey(e.Key).ToString());
+                xCbSpaceToDo.IsChecked = false;
+                xCbDeleteToDo.IsChecked = false;
             }
         }
 
@@ -348,6 +375,27 @@ namespace AutoHotKey.UserInterfaces
             //현재 선택된 버튼을 통해           
             string txt = xTextBoxExplanation.Text;
             HotKeyController.Instance.SetHotkeyExplanation(mCurrentHotkeySelected, txt);
+
+            string buttonText = mCurrentHotkeySelected.ToString() + ". ";
+            HotkeyPair info = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1);
+
+
+            buttonText += info.Trigger.ToString();
+
+            if (String.IsNullOrEmpty(xTextBoxExplanation.Text))
+            {
+                hotkeyListBtn.ElementAt(mCurrentHotkeySelected - 1).Content = buttonText;
+                return;
+            }
+
+
+            if (!String.IsNullOrEmpty(info.Explanation))
+            {
+                buttonText += " ";
+                buttonText += (info.Explanation);
+                hotkeyListBtn.ElementAt(mCurrentHotkeySelected - 1).Content = buttonText;
+                hotkeyListBtn.ElementAt(mCurrentHotkeySelected - 1).FontSize = 15;
+            }
         }
     }
 }

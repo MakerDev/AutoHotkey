@@ -22,6 +22,8 @@ namespace AutoHotKey.UserInterfaces
         public InformationWindow()
         {
             InitializeComponent();
+
+            this.ShowInTaskbar = false;
         }
 
         public void ChangeCurrentProfile(int profileNum)
