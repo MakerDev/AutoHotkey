@@ -254,12 +254,34 @@ namespace AutoHotKey.UserInterfaces
                 return;
             }
 
+            //출력에서는 아무것도 체크하지 않은 것은 부정한 것으로 판단.
             if ((!cbNoModToDo.IsChecked.Value && !cbControlToDo.IsChecked.Value && !cbAltToDo.IsChecked.Value
-                && !cbWindowToDo.IsChecked.Value && !cbShiftToDo.IsChecked.Value) || (String.IsNullOrEmpty(tbKeySetToDo.Text)) || String.IsNullOrWhiteSpace(tbKeySetToDo.Text))
+                && !cbWindowToDo.IsChecked.Value && !cbShiftToDo.IsChecked.Value))
             {
                 MessageBox.Show("출력 조건을 정확히 설정하십시오.");
                 return;
             }
+
+            int count = 0;
+            //만약 키가 빈칸인 경우, NoMOd만 체크되거나 여러가지 조합키가 선택되면 부정.
+            if ((String.IsNullOrEmpty(tbKeySetToDo.Text) || String.IsNullOrWhiteSpace(tbKeySetToDo.Text)) && !cbNoModToDo.IsChecked.Value)
+            {
+                if (cbAltToDo.IsChecked.Value) count++;
+                if (cbControlToDo.IsChecked.Value) count++;
+                if (cbShiftToDo.IsChecked.Value) count++;
+                if (cbWindowToDo.IsChecked.Value) count++;
+
+                if(count>1)
+                {
+                    MessageBox.Show("출력 조건을 정확히 설정하십시오.");
+                    return;
+                }
+                else
+                {                    
+                    currentKeyOut = 0;
+                }
+            }
+
 
             int modIn = EModifiers.NoMod;
             if (cbAlt.IsChecked.Value) modIn |= EModifiers.Alt;
@@ -304,7 +326,7 @@ namespace AutoHotKey.UserInterfaces
             return button;
         }
 
-        private void OnKeyInput(object sender, KeyEventArgs e)
+        private void OnKeyInput(object sender, System.Windows.Input.KeyEventArgs e)
         {
             ((TextBox)sender).Text = e.Key.ToString();
             //tbKeySet.Text = e.Key.ToString();

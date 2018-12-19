@@ -10,6 +10,8 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using WindowsInput;
 using WindowsInput.Native;
+using AutoHotKey.MacroControllers;
+using System.Diagnostics;
 
 namespace AutoHotKey.MacroControllers
 {
@@ -36,6 +38,8 @@ namespace AutoHotKey.MacroControllers
 
         private MainWindow mHelper = null;
         private HwndSource _source;
+
+        private WindowsHookController mHookController = null;
 
         //메인 윈도우와 매크로 세팅 윈도우 모두에서 관여해야 하므로 싱글턴으로 제작
         private static HotKeyController mInstance = null;
@@ -80,6 +84,11 @@ namespace AutoHotKey.MacroControllers
         //반드시 핫 키 등록 전 메인 윈도우에서 호출해야함. 핸들을 얻기 위해서임.
         public void RegisterHelper(MainWindow window)
         {
+            mHookController = new WindowsHookController(window);
+
+            mHookController.OnKeyEvent += OnSpecialKeyEvent;
+            mHookController.OnHotKeyEvent += OnHotkeyEvent;
+
             mHelper = window;
 
             RegisterProfileChangingHotkeyInternal();
@@ -98,7 +107,6 @@ namespace AutoHotKey.MacroControllers
 
             mProfileOnEdit = profile;
 
-
             UnRegisterHotKeyInternal();
 
             return profile; //만약 편집하려는 프로필이 없다면 -1을 반환. 있으면 profile을 그대로 반환
@@ -111,7 +119,7 @@ namespace AutoHotKey.MacroControllers
             //TODO : 프로필 닫을 때 굳이 그 프로필로 변경할 필요가 있는지 다시 생각
             //mProfileActive = mProfileOnEdit;
             RegisterHotkeyInternal(mProfileActive);
-            
+
             SaveAllProfilesInternal();
             mProfileOnEdit = 0;
         }
@@ -211,9 +219,9 @@ namespace AutoHotKey.MacroControllers
             mProfiles.RemoveAt(currentProfile - 1);
             SaveAllProfilesInternal();
 
-            if(currentProfile < mProfileActive)
+            if (currentProfile < mProfileActive)
             {
-                ChangeActiveProfileInternal(mProfileActive-1);
+                ChangeActiveProfileInternal(mProfileActive - 1);
             }
 
             //프로필 개수를 벗어난 체인지키 작동 방지 -> 예를 들어 4번 프로필을 지웠으면 F4를 인식하면 안됨.
@@ -269,7 +277,7 @@ namespace AutoHotKey.MacroControllers
 
         public void SetHotkeyExplanation(int hotkeyNum, string ex)
         {
-            mProfiles.ElementAt(mProfileOnEdit-1).GetHotKeyFromIndex(hotkeyNum - 1).Explanation = ex;
+            mProfiles.ElementAt(mProfileOnEdit - 1).GetHotKeyFromIndex(hotkeyNum - 1).Explanation = ex;
         }
 
 
@@ -299,28 +307,43 @@ namespace AutoHotKey.MacroControllers
 
             List<HotkeyPair> list = mProfiles.ElementAt(profileNum - 1).GetHotkeyList();
 
+            //새로 핫 키들을 등록하는 것이므로 딕셔너리를 한 번 비워준다.
+            mHookController.ClearKeys();
+
             foreach (var hotkey in list)
             {
                 uint vk = (uint)(hotkey.Trigger.Key);
                 uint mod = (uint)(hotkey.Trigger.Modifier);
 
+                int keyToDo = hotkey.Action.Key;
 
-                if (!RegisterHotKey(helper.Handle, HOTKEY_ID, mod, vk))
+
+                //만약 스페셜키이면
+                if (keyToDo == 0)
+                {
+                    Debug.WriteLine("스페셜키 : " + vk.ToString());
+                    mHookController.AddNewKey((int)vk, hotkey.Action.Modifier);
+                }
+                else if (!RegisterHotKey(helper.Handle, HOTKEY_ID, mod, vk))
                 {
                     // handle error
                     MessageBox.Show("핫 키 등록 실패 : " + vk.ToString() + "  " + mod.ToString());
                     return;
                 }
+
+
             }
 
             mIsHotkeyRegisterd = true;
+
+            mHookController.HookKeyboard();
             //RegisterProfileChangingHotkeyInternal();
 
             //mIsHotkeyRegistered = true;
 
             //MessageBox.Show(profileNum.ToString() + "번 프로필 동작 시작");
         }
-
+        //TODO : 나중에 후킹 및 핫 키 등록 등의 윈도우 메시지 관련 함수들을 따로 클래스를 만들어 정리하는 것을 고려한다.
         //TODO : 나중에 F1키들 말고 자유설정으로 바꿀 수 있게 해주기. + 체인지키 목록을 관리하며 핫 키와 중복없도록 하기.
         private void RegisterProfileChangingHotkeyInternal()
         {
@@ -338,7 +361,7 @@ namespace AutoHotKey.MacroControllers
                 if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, vk))
                 {
                     // handle error
-                   
+
                     MessageBox.Show("체인지 키 등록 실패");
                     return;
                 }
@@ -360,7 +383,7 @@ namespace AutoHotKey.MacroControllers
         {
             //if (mProfileActive == 0)
             //    return;
-            if(!mIsHotkeyRegisterd)
+            if (!mIsHotkeyRegisterd)
             {
                 return;
             }
@@ -372,6 +395,8 @@ namespace AutoHotKey.MacroControllers
             UnregisterHotKey(helper.Handle, HOTKEY_ID);
 
             mIsHotkeyRegisterd = false;
+
+            mHookController.UnHookKeyboard();
 
             //MessageBox.Show("등록해제");
         }
@@ -392,6 +417,7 @@ namespace AutoHotKey.MacroControllers
                     {
                         case HOTKEY_ID:
                             //MessageBox.Show("발동");
+                            Debug.WriteLine("발동");
                             HotkeyInfo hotkeyClicked = new HotkeyInfo(lParam);
                             ActHotkeyEvent(hotkeyClicked);
 
@@ -407,7 +433,36 @@ namespace AutoHotKey.MacroControllers
             return IntPtr.Zero;
         }
 
-        
+        //핫 키 이벤트 발생처리기
+        private void OnHotkeyEvent(object sender, HotKeyEventArgs hotKeyEventArgs)
+        {
+
+        }
+
+        //스페셜키 이벤트 처리기
+        private void OnSpecialKeyEvent(object sender, KeyEventArgs keyEventArgs)
+        {
+            int todo = keyEventArgs.ToDo;
+            VirtualKeyCode todoViretualKey;
+
+            if ((todo & EModifiers.Ctrl) != 0) { todoViretualKey = VirtualKeyCode.CONTROL; }
+            else if ((todo & EModifiers.Alt) != 0) { todoViretualKey = VirtualKeyCode.MENU; }
+            else if ((todo & EModifiers.Win) != 0) { todoViretualKey = VirtualKeyCode.LWIN; }
+            else { todoViretualKey = VirtualKeyCode.SHIFT; }
+
+            //KeyDown인 경우
+            if (!keyEventArgs.IsUp)
+            {
+                InputSimulator inputSimulator = new InputSimulator();
+                inputSimulator.Keyboard.KeyDown(todoViretualKey);
+            }
+            else
+            {
+                InputSimulator inputSimulator = new InputSimulator();
+                inputSimulator.Keyboard.KeyUp(todoViretualKey);
+            }
+        }
+
         private void ChangeActiveProfileInternal(int toProfile)
         {
             mProfileActive = toProfile;
@@ -475,6 +530,6 @@ namespace AutoHotKey.MacroControllers
             }
         }
 
-        
+
     }
 }
