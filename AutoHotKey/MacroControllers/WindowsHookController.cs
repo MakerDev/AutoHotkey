@@ -15,16 +15,16 @@ namespace AutoHotKey.MacroControllers
     //훅 이벤트 발생히 이벤트로 넘겨줄 인자.
     public class KeyEventArgs
     {
-        public int Key { get; private set; } //이벤트 대상 키
-        public int ToDo { get; private set; } //이벤트 대상 키
+        public int Key { get; private set; } //이벤트 발생시킨 키
+        public HotkeyInfo eventinfo { get; private set; } //이벤트 내용;
 
         public bool IsUp { get; private set; } //만약 KeyUp이면 True, Down이면 false
 
-        public KeyEventArgs(int key, int todo, bool isUp)
+        public KeyEventArgs(int key, HotkeyInfo info, bool isUp)
         {
             Key = key;
-            ToDo = todo;
             IsUp = isUp;
+            eventinfo = info;
         }
     }
 
@@ -54,6 +54,10 @@ namespace AutoHotKey.MacroControllers
 
         private static MainWindow mHelper = null;
         private static HwndSource mSource;
+
+        //가장 마지막에 출력된 핫 키
+        //입력된 키가 핫 키 리스트에 있지만 가장 마지막에 출력된 핫키에 의한 것이라면, 핫 키 이벤트를 발생시키지 않고 그냥 정상적으로 넘긴다.
+        private HotkeyInfo mLastOut;
 
         //TODO : 추후에 훅 이벤트도 이 클래스로 리펙토링 하기
         [DllImport("User32.dll")]
@@ -93,7 +97,7 @@ namespace AutoHotKey.MacroControllers
         //Z=Shift처럼 특수키로 매핑되어있어 입력을 무시해야 하는 키들
         //이 리스트에 있는 키들이 눌리면 이벤트를 발생시키고 입력을 무시함
         //구현은 리스트에 없으면 바로 훅 함수를 정상적으로 리턴해버리는 식으로 구현해도 될 듯.
-        private Dictionary<int, int> mKeyEventPairs = new Dictionary<int, int>();
+        private Dictionary<int, HotkeyInfo> mKeyEventPairs = new Dictionary<int, HotkeyInfo>();
         private Dictionary<int, bool> mIsPressedAlready = new Dictionary<int, bool>(); //이 키가 최초로 눌러진건지 판정하기 위함.
 
 
@@ -116,9 +120,9 @@ namespace AutoHotKey.MacroControllers
         }
 
         //입력키와 출력키 입력
-        public void AddNewKey(int newKey, int toDo)
+        public void AddNewKey(int newKey, HotkeyInfo info)
         {
-            mKeyEventPairs.Add(newKey, toDo);
+            mKeyEventPairs.Add(newKey, info);
             mIsPressedAlready.Add(newKey, false);
         }
 
@@ -146,31 +150,37 @@ namespace AutoHotKey.MacroControllers
 
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
             {
-                //TODO : 반복횟수를 읽어 최초 발생시에만 이벤트를 보내기
                 int vkCode = Marshal.ReadInt32(lParam);
 
 
-                if (!mKeyEventPairs.ContainsKey(vkCode))
-                {
-                    Debug.WriteLine("코드 : " + vkCode.ToString() + "가 리스트에 없다");
+                Debug.WriteLine(IsHaveSameTriggerWithTheLastOutput(vkCode).ToString());
 
+                //리스트에 없는 키는 무시 + 만약 최근의 출력으로 인해 이벤트가 발동된 것이라면 무시
+                if (!mKeyEventPairs.ContainsKey(vkCode) || IsHaveSameTriggerWithTheLastOutput(vkCode))
+                {
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
                 }
 
-                //이미 한번 눌러졌으면 이벤트 발생X
-                if(mIsPressedAlready[vkCode])
+                //이미 한번 눌러졌으면 이벤트 발생X, 그냥 입력 무시 단, z=shift같은 특수키에만 해당.
+                if(mIsPressedAlready[vkCode] && mKeyEventPairs[vkCode].Key==0)
                 {
                     return new IntPtr(5);
                 }
 
-                if (OnKeyEvent != null) { OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], false)); }
+                //처음 발동 될 때 가장 최근 아웃풋을 설정해놈.
+                if (OnKeyEvent != null)
+                {
+                    mLastOut = new HotkeyInfo(mKeyEventPairs[vkCode].Key, mKeyEventPairs[vkCode].Modifier);
+                    OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], false));
+                    Debug.WriteLine("현재 아웃풋" + mLastOut.ToString());
+                }
 
                 mIsPressedAlready[vkCode] = true;
 
                 //0이 아닌 값을 리턴하면 입력을 중간에서 없애버릴 수 있다.
                 return new IntPtr(5);
             }
-            else if (nCode >= 0 && wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP)
+            else if (nCode >= 0 && (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP))
             {
                 int vkCode = Marshal.ReadInt32(lParam);
 
@@ -179,9 +189,13 @@ namespace AutoHotKey.MacroControllers
                 if (!mKeyEventPairs.ContainsKey(vkCode))
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
 
-                if (OnKeyEvent != null) { OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], true)); }
+                if (OnKeyEvent != null)
+                {
+                    OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], true));
+                    Debug.WriteLine("업 이벤트 발생");
+                    mLastOut = null;    //키를 땔 때는 최근 아웃풋을 초기화함.
+                }
 
-                Debug.WriteLine("그냥 리턴)");
                 mIsPressedAlready[vkCode] = false;
 
                 //0이 아닌 값을 리턴하면 입력을 중간에서 없애버릴 수 있다.
@@ -190,6 +204,19 @@ namespace AutoHotKey.MacroControllers
 
             return CallNextHookEx(mHookID, nCode, wParam, lParam);
 
+        }
+
+
+        //이번 입력과 가장 최근 아웃풋이 겹친다면 그건 연쇄라는 의미이니 무시해 버리기 위해 체크
+        private bool IsHaveSameTriggerWithTheLastOutput(int vkCode)
+        {
+            if (mLastOut == null)
+                return false;
+
+            if (mLastOut.Key == vkCode)
+                return true;
+            else
+                return false;
         }
     }
 }

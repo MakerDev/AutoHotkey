@@ -63,6 +63,7 @@ namespace AutoHotKey.MacroControllers
         private List<HotKeyProfile> mProfiles = new List<HotKeyProfile>();
         //private bool mIsHotkeyRegistered = false;
 
+
         [DllImport("User32.dll")]
         private static extern bool RegisterHotKey(
            [In] IntPtr hWnd,
@@ -319,10 +320,12 @@ namespace AutoHotKey.MacroControllers
 
 
                 //만약 스페셜키이면
-                if (keyToDo == 0)
+                //TODO : 스페이스 땜빵한 거 수정. 단일 키로 실행되는 핫 키는 다 이리로 옮기기
+                if (mod == 0)
                 {
                     Debug.WriteLine("스페셜키 : " + vk.ToString());
-                    mHookController.AddNewKey((int)vk, hotkey.Action.Modifier);
+                    HotkeyInfo info = new HotkeyInfo(hotkey.Action.Key, hotkey.Action.Modifier);
+                    mHookController.AddNewKey((int)vk, info);
                 }
                 else if (!RegisterHotKey(helper.Handle, HOTKEY_ID, mod, vk))
                 {
@@ -442,25 +445,56 @@ namespace AutoHotKey.MacroControllers
         //스페셜키 이벤트 처리기
         private void OnSpecialKeyEvent(object sender, KeyEventArgs keyEventArgs)
         {
-            int todo = keyEventArgs.ToDo;
-            VirtualKeyCode todoViretualKey;
+            int todoMod = keyEventArgs.eventinfo.Modifier;
 
-            if ((todo & EModifiers.Ctrl) != 0) { todoViretualKey = VirtualKeyCode.CONTROL; }
-            else if ((todo & EModifiers.Alt) != 0) { todoViretualKey = VirtualKeyCode.MENU; }
-            else if ((todo & EModifiers.Win) != 0) { todoViretualKey = VirtualKeyCode.LWIN; }
-            else { todoViretualKey = VirtualKeyCode.SHIFT; }
+            VirtualKeyCode todoViretualKey = VirtualKeyCode.SHIFT;
+            //만약 no Mod 이면 처리하면 안됨.
+            if (todoMod != 0)
+            {
+                todoViretualKey = VirtualKeyCode.SHIFT;
+                if ((todoMod & EModifiers.Ctrl) != 0) { todoViretualKey = VirtualKeyCode.CONTROL; }
+                else if ((todoMod & EModifiers.Alt) != 0) { todoViretualKey = VirtualKeyCode.MENU; }
+                else if ((todoMod & EModifiers.Win) != 0) { todoViretualKey = VirtualKeyCode.LWIN; }
+                else if ((todoMod & EModifiers.Shift) != 0) { todoViretualKey = VirtualKeyCode.SHIFT; }
+
+
+
+            }
+
+            int todoKey = keyEventArgs.eventinfo.Key;
+            VirtualKeyCode todoKeyVirtualKey = (VirtualKeyCode)todoKey;
+
+            InputSimulator inputSimulator = new InputSimulator();
 
             //KeyDown인 경우
             if (!keyEventArgs.IsUp)
             {
-                InputSimulator inputSimulator = new InputSimulator();
-                inputSimulator.Keyboard.KeyDown(todoViretualKey);
+                Debug.WriteLine("키 다운");
+
+                if (todoMod != 0)
+                {
+                    inputSimulator.Keyboard.KeyDown(todoViretualKey);
+                }
+                if (todoKey != 0)
+                {
+                    inputSimulator.Keyboard.KeyDown(todoKeyVirtualKey);
+                }
             }
             else
             {
-                InputSimulator inputSimulator = new InputSimulator();
-                inputSimulator.Keyboard.KeyUp(todoViretualKey);
+                Debug.WriteLine("키 업");
+                if (todoMod != 0)
+                {
+                    inputSimulator.Keyboard.KeyUp(todoViretualKey);
+                }
+                if (todoKey != 0)
+                {
+                    inputSimulator.Keyboard.KeyUp(todoKeyVirtualKey);
+
+                }
+
             }
+
         }
 
         private void ChangeActiveProfileInternal(int toProfile)

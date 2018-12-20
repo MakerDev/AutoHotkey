@@ -55,7 +55,7 @@ namespace AutoHotKey
             mInfoWindow.Show();
 
             ni = new System.Windows.Forms.NotifyIcon();
-            ni.Icon = new System.Drawing.Icon("Main.ico");
+            ni.Icon = new System.Drawing.Icon("Main2.ico");
             ni.Visible = true;
             ni.DoubleClick +=
                 delegate (object sender, EventArgs args)

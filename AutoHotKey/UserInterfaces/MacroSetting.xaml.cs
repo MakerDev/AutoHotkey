@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,8 @@ namespace AutoHotKey.UserInterfaces
     public partial class MacroSetting : Window
     {
         private const int MAXHOTKEY = 35;
+        const int VK_SPACE = 0x20;
+        const int VK_DELETE = 0x2E;
 
         //버튼 순서로 어떤 핫 키 인지 구분
         private List<Button> hotkeyListBtn = new List<Button>();
@@ -141,6 +144,9 @@ namespace AutoHotKey.UserInterfaces
             tbKeySet.Text = "";
             tbKeySetToDo.Text = "";
 
+            currentKeyIn = -1;
+            currentKeyOut = -1;
+
         }
 
 
@@ -208,8 +214,6 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnToDoCheckBoxChanged(object sender, RoutedEventArgs e)
         {
-            const int VK_SPACE = 0x20;
-            const int VK_DELETE = 0x2E;
 
             if (ReferenceEquals(sender, cbNoModToDo) && cbNoModToDo.IsChecked.Value)
             {
@@ -288,13 +292,13 @@ namespace AutoHotKey.UserInterfaces
                 if (cbShiftToDo.IsChecked.Value) count++;
                 if (cbWindowToDo.IsChecked.Value) count++;
 
-                if(count>1)
+                if (count > 1)
                 {
                     MessageBox.Show("출력 조건을 정확히 설정하십시오.");
                     return;
                 }
-                else
-                {                    
+                else if(currentKeyOut==-1)
+                {
                     currentKeyOut = 0;
                 }
             }
@@ -313,7 +317,12 @@ namespace AutoHotKey.UserInterfaces
             if (cbShiftToDo.IsChecked.Value) modOut |= EModifiers.Shift;
             if (cbWindowToDo.IsChecked.Value) modOut |= EModifiers.Win;
 
-            HotkeyPair hotkey = new HotkeyPair(new HotkeyInfo(currentKeyIn, modIn), new HotkeyInfo(currentKeyOut, modOut));
+
+            HotkeyPair hotkey;
+
+            //else 지움
+            hotkey = new HotkeyPair(new HotkeyInfo(currentKeyIn, modIn), new HotkeyInfo(currentKeyOut, modOut));
+            
 
             if (HotKeyController.Instance.AddNewHotkey(hotkey))
             {
@@ -336,12 +345,12 @@ namespace AutoHotKey.UserInterfaces
 
             buttonText += info.Trigger.ToString();
 
-            if(!String.IsNullOrEmpty(info.Explanation))
+            if (!String.IsNullOrEmpty(info.Explanation))
             {
-                buttonText += (" "+info.Explanation);
-                button.FontSize = 15;
+                buttonText += (" " + info.Explanation);
             }
 
+            button.FontSize = 15;
             button.Content = buttonText;
             button.Width = 330;
             button.Height = 35;
