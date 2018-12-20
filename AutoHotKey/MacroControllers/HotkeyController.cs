@@ -446,34 +446,31 @@ namespace AutoHotKey.MacroControllers
         private void OnSpecialKeyEvent(object sender, KeyEventArgs keyEventArgs)
         {
             int todoMod = keyEventArgs.eventinfo.Modifier;
-
-            VirtualKeyCode todoViretualKey = VirtualKeyCode.SHIFT;
-            //만약 no Mod 이면 처리하면 안됨.
-            if (todoMod != 0)
-            {
-                todoViretualKey = VirtualKeyCode.SHIFT;
-                if ((todoMod & EModifiers.Ctrl) != 0) { todoViretualKey = VirtualKeyCode.CONTROL; }
-                else if ((todoMod & EModifiers.Alt) != 0) { todoViretualKey = VirtualKeyCode.MENU; }
-                else if ((todoMod & EModifiers.Win) != 0) { todoViretualKey = VirtualKeyCode.LWIN; }
-                else if ((todoMod & EModifiers.Shift) != 0) { todoViretualKey = VirtualKeyCode.SHIFT; }
-
-
-
-            }
-
             int todoKey = keyEventArgs.eventinfo.Key;
+
             VirtualKeyCode todoKeyVirtualKey = (VirtualKeyCode)todoKey;
 
             InputSimulator inputSimulator = new InputSimulator();
+
+
+            List<VirtualKeyCode> modifiers = new List<VirtualKeyCode>();
+
+            if ((todoMod & EModifiers.Ctrl) != 0) { modifiers.Add(VirtualKeyCode.CONTROL); }
+            if ((todoMod & EModifiers.Shift) != 0) { modifiers.Add(VirtualKeyCode.SHIFT); }
+            if ((todoMod & EModifiers.Alt) != 0) { modifiers.Add(VirtualKeyCode.MENU); }
+            if ((todoMod & EModifiers.Win) != 0) { modifiers.Add(VirtualKeyCode.LWIN); }
 
             //KeyDown인 경우
             if (!keyEventArgs.IsUp)
             {
                 Debug.WriteLine("키 다운");
 
-                if (todoMod != 0)
+                if (modifiers.Count != 0)
                 {
-                    inputSimulator.Keyboard.KeyDown(todoViretualKey);
+                    foreach(var todoModifier in modifiers)
+                    {
+                        inputSimulator.Keyboard.KeyDown(todoModifier);
+                    }
                 }
                 if (todoKey != 0)
                 {
@@ -483,10 +480,15 @@ namespace AutoHotKey.MacroControllers
             else
             {
                 Debug.WriteLine("키 업");
-                if (todoMod != 0)
+
+                if (modifiers.Count != 0)
                 {
-                    inputSimulator.Keyboard.KeyUp(todoViretualKey);
+                    foreach (var todoModifier in modifiers)
+                    {
+                        inputSimulator.Keyboard.KeyUp(todoModifier);
+                    }
                 }
+
                 if (todoKey != 0)
                 {
                     inputSimulator.Keyboard.KeyUp(todoKeyVirtualKey);

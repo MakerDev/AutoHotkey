@@ -152,9 +152,6 @@ namespace AutoHotKey.MacroControllers
             {
                 int vkCode = Marshal.ReadInt32(lParam);
 
-
-                Debug.WriteLine(IsHaveSameTriggerWithTheLastOutput(vkCode).ToString());
-
                 //리스트에 없는 키는 무시 + 만약 최근의 출력으로 인해 이벤트가 발동된 것이라면 무시
                 if (!mKeyEventPairs.ContainsKey(vkCode) || IsHaveSameTriggerWithTheLastOutput(vkCode))
                 {
@@ -186,13 +183,15 @@ namespace AutoHotKey.MacroControllers
 
                 //여기서 등록되지 않은 키일 경우를 처리했으므로 아래에서는 무조건 등록된 키에 대한 처리만 하면 됨.
                 //따라서 아래부터는 0이 아닌 값을 리턴해 버려야함.
-                if (!mKeyEventPairs.ContainsKey(vkCode))
+                if (!mKeyEventPairs.ContainsKey(vkCode) || IsHaveSameTriggerWithTheLastOutput(vkCode))
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
 
+                //만약 f=ctrl + z로 설정하면 f, ctrl과 z에서 각각 keyup 이벤트가 발생하여 keyup이벤트가 세 번 발생한다.
+                //
                 if (OnKeyEvent != null)
                 {
                     OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], true));
-                    Debug.WriteLine("업 이벤트 발생");
+                    Debug.WriteLine("업 이벤트 발생" + vkCode.ToString());
                     mLastOut = null;    //키를 땔 때는 최근 아웃풋을 초기화함.
                 }
 
