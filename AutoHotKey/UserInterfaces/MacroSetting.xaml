@@ -56,24 +56,16 @@
                 TextWrapping="Wrap" TextChanged="xTextBoxExplanation_TextChanged"
                 />
 
-
-            <Button Name="btnEditHotKey"
-                    Content="Edit Hotkey" 
-                    Width="250" Height="35" 
-                    Margin="0, 100, 0 ,0"
-                    FontSize="20"
-                    />
-
             <Button Name="btnDeleteHotkey"
                     Content="Delete Hotkey" 
                     Width="250" Height="35" 
-                    Margin="0, 15, 0 ,0"
+                    Margin="0, 100, 0 ,0"
                     FontSize="20" Click="OnDeleteHotkeyClicked"
                     />
         </StackPanel>
 
         <StackPanel
-              Visibility="Hidden"
+              Visibility="Visible"
               HorizontalAlignment="Left" 
               Height="441" Margin="330,0,0,0" 
               VerticalAlignment="Top" 
@@ -82,6 +74,7 @@
 
             <StackPanel>
                 <TextBox 
+                    Visibility="Collapsed"
                     Text=" Combination"
                     IsReadOnly="True"
                     FontSize="18"
@@ -89,11 +82,13 @@
                 />
 
                 <StackPanel 
+                    Visibility="Collapsed"
                     Orientation="Horizontal"
                     Margin="0, 8, 0, 0"
                     >
                     <CheckBox x:Name="cbNoMod" Content="NoMod"
                               Margin="7, 0 , 0,0" 
+                              IsChecked="True"
                               Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
                     <CheckBox x:Name="cbControl" Content="Control"
                               Margin="10, 0 , 0,0"

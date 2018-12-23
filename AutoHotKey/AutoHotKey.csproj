@@ -80,6 +80,7 @@
     <Compile Include="MacroControllers\HotkeyPair.cs" />
     <Compile Include="MacroControllers\HotKeyProfile.cs" />
     <Compile Include="MacroControllers\HotkeyController.cs" />
+    <Compile Include="MacroControllers\ProfileChangeKeysContainer.cs" />
     <Compile Include="MacroControllers\WindowsHookController.cs" />
     <Compile Include="UserInterfaces\InformationWindow.xaml.cs">
       <DependentUpon>InformationWindow.xaml</DependentUpon>

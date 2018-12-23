@@ -26,11 +26,17 @@ namespace AutoHotKey.UserInterfaces
             this.ShowInTaskbar = false;
         }
 
+        //profileNum==-1 이면 비활성화 상태라는 뜻.
         public void ChangeCurrentProfile(int profileNum)
         {
             if(profileNum==0)
             {
-                xLabelCurrentProfile.Content = "No Profile";
+                xLabelCurrentProfile.Content = "Activated";
+            }
+            else if(profileNum==-1)
+            {
+                xLabelCurrentProfile.Content = "Deactivated";
+
             }
             else
             {
