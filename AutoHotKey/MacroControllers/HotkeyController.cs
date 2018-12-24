@@ -12,6 +12,7 @@ using WindowsInput;
 using WindowsInput.Native;
 using AutoHotKey.MacroControllers;
 using System.Diagnostics;
+using System.Runtime.Serialization.Json;
 
 namespace AutoHotKey.MacroControllers
 {
@@ -59,7 +60,8 @@ namespace AutoHotKey.MacroControllers
         private int mProfileOnEdit = 0; //현재 편집중인 프로필. 아무것도 편집중이지 않으면 0;
         private int mProfileActive = 0; //현재 핫 키로 동작중인 프로필, 아무것도 동작중이지 않으면 0;
         private bool mIsHotkeyRegisterd = false; //현재 핫 키나 변경키가 등록되었는지 여부
-        private bool mIsHotkeyActivated = true; //프로필 전환키로 프로필을 실행시킬 수 있는 상태인지 여부
+        private bool mIsHotkeyActivated = false; //프로필 전환키로 프로필을 실행시킬 수 있는 상태인지 여부
+        private bool mIsSettingProfileChangeKeys = false; //프로필 변경 키를 수정 중인 지 여부
 
         private List<HotKeyProfile> mProfiles = new List<HotKeyProfile>();
         private ProfileChangeKeysContainer mProfileChangeKeyContainer;
@@ -104,7 +106,7 @@ namespace AutoHotKey.MacroControllers
         {
             if (mProfiles.Count < profile)
             {
-                MessageBox.Show("잘못된 접근입니다");
+                MessageBox.Show("Invalid Access");
                 return -1;
             }
 
@@ -140,6 +142,35 @@ namespace AutoHotKey.MacroControllers
             }
         }
 
+        public void StartSetProfileChangingKeys()
+        {
+            //완전히 모든 핫 키를 해제
+            UnRegisterHotKeyInternal();
+            mIsSettingProfileChangeKeys = true;
+        }
+
+        public bool IsSettingProfileChangingKeys()
+        {
+            return mIsSettingProfileChangeKeys;
+        }
+
+        public void EndSetProfileChangingKeys()
+        {
+            if(mProfileActive==-1)
+            {
+                RegisterProfileChangingHotkeyInternal();
+            }
+            else
+            {
+                RegisterHotkeyInternal(mProfileActive);
+            }
+
+            mIsSettingProfileChangeKeys = false;
+            //편집하는 동안 변경된 상태를 원상복구 하기 위해 다시 한 번 로드한다.
+            mProfileChangeKeyContainer.LoadProfileChangeKeys();
+        }
+
+
         public void AddNewProfile()
         {
             HotKeyProfile profile = new HotKeyProfile();
@@ -151,6 +182,114 @@ namespace AutoHotKey.MacroControllers
         public int GetNumOfProfiles()
         {
             return mProfiles.Count;
+        }
+
+        public int GetProfileChangeKeyFromIndex(int from, int to)
+        {
+            return mProfileChangeKeyContainer.GetProfileChangeKeyFromIndex(from, to);
+        }
+
+        /* 문제가 없으면 0
+         * 프로필키와 중복이 생기면 1
+         * 입력은 인덱스가 아니다
+         * key로 -1이 들어오면 기본 체인지키로 바꾸겠다는 말임.
+         */
+        public int SetProfileChangeKey(int from, int to, int key)
+        {
+            if (key == -1)
+            {
+                mProfileChangeKeyContainer.SetToDefaultByIndex(from - 1, to - 1);
+
+                return 0;
+            }
+
+            if (IsHaveSameKeyInProfile(from, key) || IsHaveSameKeyInChangeKey(from, key))
+            {
+                return 1;
+            }
+
+            mProfileChangeKeyContainer.SetChangeKeyByIndex(from - 1, to - 1, key);
+
+            return 0;
+        }
+
+        //0이면 성공
+        //11이면 1번 프로필안의 어떤 핫 키와 겹침
+        //22면 2번 프로필의 체인지키들과 겹침.
+        public int SetEscapeKey(int key)
+        {
+            for (int i = 0; i < mProfiles.Count; i++)
+            {
+                if (IsHaveSameKeyInProfile(i + 1, key))
+                {
+                    return (10 + i + 1);
+                }
+                else if(IsHaveSameKeyInChangeKey(i+1, key))
+                {
+                    return (20 + i + 1);
+                }
+            }
+
+            mProfileChangeKeyContainer.SetEscapeKey(key);
+
+            return 0;
+        }
+
+        public int GetEscapeKey()
+        {
+            return mProfileChangeKeyContainer.GetEscapeKey();
+        }
+
+        //중복이 있으면 기본값으로 바꿔주는 역할. 리턴 값은 수정된 변경 키 개수
+        //allToDefault = true 이면 모든 체인지키를 기본으로
+        private int CheckAndSetProfileChangeKey(bool allToDefault, int profileNum)
+        {
+            int count = 0;
+
+            for (int i = 0; i < MAX_NUM_OF_PROFILES; i++)
+            {
+                if(allToDefault)
+                {
+                    mProfileChangeKeyContainer.SetToDefaultByIndex(profileNum - 1, i);
+                }
+                else if(IsHaveSameKeyInProfile(profileNum, mProfileChangeKeyContainer.GetProfileChangeKeyFromIndex(profileNum - 1, i)))
+                {
+                    mProfileChangeKeyContainer.SetToDefaultByIndex(profileNum - 1, i);
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        //체인지 키가 프로필 내의 핫 키와 중복되는 지 검사
+        private bool IsHaveSameKeyInProfile(int profileNum, int key)
+        {
+            List<HotkeyPair> hotkeyList = mProfiles[profileNum - 1].GetHotkeyList();
+
+            for (int i = 0; i < hotkeyList.Count; i++)
+            {
+                if (hotkeyList[i].Trigger.Key == key)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        //핫 키가 프로필 체인키와 중복되는 지 검사.
+        private bool IsHaveSameKeyInChangeKey(int profileNum, int key)
+        {
+            for (int i = 0; i < MAX_NUM_OF_PROFILES; i++)
+            {
+                if (key == mProfileChangeKeyContainer.GetProfileChangeKeyFromIndex(profileNum - 1, i))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         //Delete나 Add 이벤트 마다 호출 되어야 함.
@@ -209,12 +348,12 @@ namespace AutoHotKey.MacroControllers
             return count;
         }
 
-
+        //TODO : 여기서 핫키와 체인지 키의 중복문제를 검사하도록 해야함.
         public void DeleteProfile(int currentProfile)
         {
             if (mProfileActive == currentProfile)
             {
-                MessageBox.Show("현재 프로필이 핫키로 동작중입니다. 다른 프로필로 변경후 삭제하십시오");
+                MessageBox.Show("This profile is being activated. Change to other profile to delete this.");
                 return;
             }
 
@@ -227,6 +366,18 @@ namespace AutoHotKey.MacroControllers
                 ChangeActiveProfileInternal(mProfileActive - 1);
             }
 
+            for(int i=currentProfile; i<=MAX_NUM_OF_PROFILES; i++)
+            {
+                if(i<=mProfiles.Count)
+                {
+                    CheckAndSetProfileChangeKey(false, i);
+                }
+                else
+                {
+                    CheckAndSetProfileChangeKey(true, i);
+                }
+            }
+            SaveProfileChangeKeys();
             //프로필 개수를 벗어난 체인지키 작동 방지 -> 예를 들어 4번 프로필을 지웠으면 F4를 인식하면 안됨.
             UnRegisterHotKeyInternal();
             RegisterHotkeyInternal(mProfileActive);
@@ -245,27 +396,31 @@ namespace AutoHotKey.MacroControllers
 
         public bool AddNewHotkey(HotkeyPair hotkey)
         {
+            int key = hotkey.Trigger.Key;
+
+            if (IsHaveSameKeyInChangeKey(mProfileOnEdit, key))
+            {
+                MessageBox.Show("Same Key Exists in Profile-Changing keys");
+
+                return false;
+            }
+
             int result = mProfiles.ElementAt(mProfileOnEdit - 1).AddNewHotKey(hotkey);
 
             if (result == 2)
             {
-                MessageBox.Show("더 이상 핫 키를 추가할 수 없습니다.");
+                MessageBox.Show("Can't Add more Hotkey");
 
                 return false;
             }
             else if (result == 1)
             {
-                MessageBox.Show("이미 같은 핫키가 존재합니다.");
-                return false;
-            }
-            else if (result == 3)
-            {
-                MessageBox.Show("체인지키와 겹치는 핫 키입니다.");
+                MessageBox.Show("Same hotkey already exists");
                 return false;
             }
             else
             {
-                MessageBox.Show("추가 성공");
+                MessageBox.Show("Success");
                 return true;
             }
         }
@@ -282,8 +437,6 @@ namespace AutoHotKey.MacroControllers
         {
             mProfiles.ElementAt(mProfileOnEdit - 1).GetHotKeyFromIndex(hotkeyNum - 1).Explanation = ex;
         }
-
-
 
         //프로필에 있는 핫 키를 윈도우에 등록한다. 참고로 이건 클래스이지 윈도우가 아니므로 기존의 this를 대체할 뭔가가 필요함.
         private void RegisterHotkeyInternal(int profileNum)
@@ -332,7 +485,7 @@ namespace AutoHotKey.MacroControllers
                 else if (!RegisterHotKey(helper.Handle, HOTKEY_ID, mod, vk))
                 {
                     // handle error
-                    MessageBox.Show("핫 키 등록 실패 : " + vk.ToString() + "  " + mod.ToString());
+                    MessageBox.Show("Couldn't Register hotkey : " + vk.ToString() + "  " + mod.ToString());
                     return;
                 }
 
@@ -351,7 +504,7 @@ namespace AutoHotKey.MacroControllers
 
         //TODO : 나중에 후킹 및 핫 키 등록 등의 윈도우 메시지 관련 함수들을 따로 클래스를 만들어 정리하는 것을 고려한다.
         //TODO : 나중에 F1키들 말고 자유설정으로 바꿀 수 있게 해주기. + 체인지키 목록을 관리하며 핫 키와 중복없도록 하기.
-        //
+        //반드시 프로필이 등록되었을 때만 사용될 수 있다.
         private void RegisterProfileChangingHotkeyInternal()
         {
             var helper = new WindowInteropHelper(mHelper);
@@ -360,28 +513,28 @@ namespace AutoHotKey.MacroControllers
             _source = HwndSource.FromHwnd(helper.Handle);
             _source.AddHook(HwndHook);
 
-
+            int escape = mProfileChangeKeyContainer.GetEscapeKey();
             //ESC등록
-            if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, 27))
+            if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, (uint)escape))
             {
                 // handle error
-                MessageBox.Show("체인지 키 등록 실패");
+                MessageBox.Show("Couldn't register profile-changing key");
                 return;
             }
-            
+
             //핫 키 프로그램이 활성화 상태일 때만 체인지 키를 등록해야함.
-            if(mIsHotkeyActivated)
+            if (mIsHotkeyActivated)
             {
-                for (uint i = 0; i < mProfiles.Count; i++)
+                for (int i = 0; i < mProfiles.Count; i++)
                 {
                     //112는 F1이다.
-                    uint vk = 112 + i;
+                    int vk = mProfileChangeKeyContainer.GetProfileChangeKeyFromIndex(mProfileActive - 1, i);
 
-                    if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, vk))
+
+                    if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, (uint)vk) && vk != -1)
                     {
                         // handle error
-
-                        MessageBox.Show("체인지 키 등록 실패");
+                        MessageBox.Show("Couldn't register profile-changing key");
                         return;
                     }
                 }
@@ -432,7 +585,7 @@ namespace AutoHotKey.MacroControllers
                             //MessageBox.Show("발동");
                             Debug.WriteLine("발동");
                             HotkeyInfo hotkeyClicked = new HotkeyInfo(lParam);
-                            ActHotkeyEvent(hotkeyClicked);
+                            ActChangeAndQuitKeys(hotkeyClicked);
 
                             handled = true;
                             break;
@@ -477,7 +630,7 @@ namespace AutoHotKey.MacroControllers
 
                 if (modifiers.Count != 0)
                 {
-                    foreach(var todoModifier in modifiers)
+                    foreach (var todoModifier in modifiers)
                     {
                         inputSimulator.Keyboard.KeyDown(todoModifier);
                     }
@@ -516,21 +669,22 @@ namespace AutoHotKey.MacroControllers
         }
 
         //입력키를 전부 단일 키로 설정할 시 이 함수는 체인지키와 탈출키만을 처리한다.
-        private void ActHotkeyEvent(HotkeyInfo trigger)
+        private void ActChangeAndQuitKeys(HotkeyInfo trigger)
         {
-            //ESC인 경우 탈충
-            if (trigger.Modifier == 0 && trigger.Key == KeyInterop.VirtualKeyFromKey(Key.Escape))
+            //ESCAPE인 경우 탈충
+            if (trigger.Modifier == 0 && trigger.Key == mProfileChangeKeyContainer.GetEscapeKey())
             {
                 //체인지 키만 남기고 해제
                 mIsHotkeyActivated = !mIsHotkeyActivated;
                 UnRegisterHotKeyInternal();
 
-                if(mIsHotkeyActivated)
+                //만약 Deactivated 였으면 Profile1으로 간다.
+                if (mIsHotkeyActivated)
                 {
                     ChangeActiveProfileInternal(1);
                     RegisterHotkeyInternal(mProfileActive);
                 }
-                else
+                else //만약 원래 activated였으면 Deactivated로 바꾼다.
                 {
                     RegisterProfileChangingHotkeyInternal();
                     ChangeActiveProfileInternal(-1);
@@ -541,60 +695,23 @@ namespace AutoHotKey.MacroControllers
             }
 
             //TODO : 체인지키 변경 가능하게 하면 바꾸기
-            if (trigger.Modifier == 0 && (trigger.Key >= 112 && trigger.Key < 112 + mProfiles.Count))
+            for (int i = 0; i < mProfiles.Count; i++)
             {
-                UnRegisterHotKeyInternal();
-                ChangeActiveProfileInternal(trigger.Key - 111);
-
-                RegisterHotkeyInternal(mProfileActive);
-
-                return;
-
-            }
-
-            //만약 ESC나 체인지키가 아니라면 핫키라는 말임.
-
-            List<HotkeyPair> list = mProfiles.ElementAt(mProfileActive - 1).GetHotkeyList();
-
-            HotkeyInfo todo = null;
-
-            foreach (var hotkey in list)
-            {
-                if (hotkey.Trigger.Equals(trigger))
+                if (trigger.Key == mProfileChangeKeyContainer.GetProfileChangeKeyFromIndex(mProfileActive - 1, i))
                 {
-                    todo = hotkey.Action;
+                    UnRegisterHotKeyInternal();
+                    ChangeActiveProfileInternal(i + 1);
+                    RegisterHotkeyInternal(mProfileActive);
+
+                    return;
                 }
             }
 
-            InputSimulator inputSimulator = new InputSimulator();
-            List<VirtualKeyCode> modifiers = new List<VirtualKeyCode>();
-
-            if ((todo.Modifier & EModifiers.Ctrl) != 0) { modifiers.Add(VirtualKeyCode.CONTROL); }
-            if ((todo.Modifier & EModifiers.Alt) != 0) { modifiers.Add(VirtualKeyCode.MENU); }
-            if ((todo.Modifier & EModifiers.Win) != 0) { modifiers.Add(VirtualKeyCode.LWIN); }
-            if ((todo.Modifier & EModifiers.Shift) != 0) { modifiers.Add(VirtualKeyCode.SHIFT); }
-
-            if (modifiers.Count == 0)
-            {
-                inputSimulator.Keyboard.KeyPress((VirtualKeyCode)todo.Key);
-            }
-            else
-            {
-                inputSimulator.Keyboard.ModifiedKeyStroke(modifiers, (VirtualKeyCode)todo.Key);
-            }
         }
 
-        //TODO : 프로필 변경 키 저장 구현
-        private void SaveProfileChangeKeys()
+        public void SaveProfileChangeKeys()
         {
-
+            mProfileChangeKeyContainer.SaveProfileChangeKeys();
         }
-
-        //TODO : 프로필 변경 키 로드 구현
-        private void LoadProfileChangeKeys()
-        {
-
-        }
-
     }
 }

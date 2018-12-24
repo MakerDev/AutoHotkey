@@ -31,28 +31,22 @@ namespace AutoHotKey
         private int currentProfile = 0; //만약 아무 프로필도 선택되지 않은 상태일때는 0
 
         private InformationWindow mInfoWindow = null;
-         
+        private MacroSetting macroSettingWindow = null;
 
         public MainWindow()
         {
             InitializeComponent();
-            
+
             list = new StackPanel();
             list.HorizontalAlignment = HorizontalAlignment.Left;
             list.VerticalAlignment = VerticalAlignment.Top;
 
             ClearViewInternal();
-            
+
             scrViewerProfiles.Content = list;
 
             this.Loaded += OnMainWindowLoaded;
             Closing += OnMainWindowClosing;
-
-
-            mInfoWindow = new InformationWindow();
-            mInfoWindow.ChangeCurrentProfile(0);
-
-            mInfoWindow.Show();
 
             ni = new System.Windows.Forms.NotifyIcon();
             ni.Icon = new System.Drawing.Icon("Main2.ico");
@@ -63,6 +57,12 @@ namespace AutoHotKey
                     this.Show();
                     this.WindowState = WindowState.Normal;
                 };
+
+
+            mInfoWindow = new InformationWindow();
+            mInfoWindow.ChangeCurrentProfile(-1);
+
+            mInfoWindow.Show();
         }
 
         protected override void OnStateChanged(EventArgs e)
@@ -91,7 +91,6 @@ namespace AutoHotKey
         {
             HotKeyController.Instance.RegisterHelper(this);
             HotKeyController.Instance.ProfileChanged += OnActiveProfileChanged;
-
         }
 
         // : 만약 프로필 순서 바꾸는 기능을 추가하려면 구현은 파일이름을 바꾸고 다시 로딩하는 걸로 구현하면 됨 
@@ -110,13 +109,13 @@ namespace AutoHotKey
 
         private void SetProfileView(int numOfProfile)
         {
-            if(numOfProfile==0)
+            if (numOfProfile == 0)
             {
-                tbCurrentProfile.Text = "Profile을 선택하십시오";
+                tbCurrentProfile.Content = "Please Select a Profile";
             }
             else
             {
-                tbCurrentProfile.Text = "Profile " + numOfProfile.ToString();
+                tbCurrentProfile.Content = "Profile " + numOfProfile.ToString();
             }
 
             sProfileContent.Visibility = Visibility.Visible;
@@ -130,7 +129,7 @@ namespace AutoHotKey
 
             list.Children.Clear();
 
-            for (int i = 1; i <= HotKeyController.Instance.GetNumOfProfiles() ; i++)
+            for (int i = 1; i <= HotKeyController.Instance.GetNumOfProfiles(); i++)
             {
                 Button button1 = new Button();
                 button1.Content = "Profile " + i.ToString();
@@ -142,7 +141,7 @@ namespace AutoHotKey
                 buttons.Add(button1);
                 list.Children.Add(button1);
             }
-            
+
 
             addButton = new Button();
             addButton.Content = "ADD Profile";
@@ -157,39 +156,46 @@ namespace AutoHotKey
 
         private void OnAddProfileClicked(object sender, RoutedEventArgs e)
         {
+            if(HotKeyController.Instance.GetNumOfProfiles() == HotKeyController.MAX_NUM_OF_PROFILES)
+            {
+                MessageBox.Show("Can't Add more Profile");
+
+                return;
+            }
+
             HotKeyController.Instance.AddNewProfile();
             ClearViewInternal();
         }
 
         private void OnEditProfileCliked(object sender, RoutedEventArgs e)
-        {         
-            if(currentProfile==0)
+        {
+            if (currentProfile == 0)
             {
-                MessageBox.Show("프로필을 선택하십시오");
+                MessageBox.Show("Please Select a Profile");
                 return;
             }
 
-            if(HotKeyController.Instance.IsEdittingProfile())
+            if (HotKeyController.Instance.IsEdittingProfile())
             {
-                MessageBox.Show("이미 편집중인 프로필이 있습니다");
+                MessageBox.Show("There is a profile still on editing");
+
                 return;
             }
 
-            UserInterfaces.MacroSetting macroSettingWindow = new UserInterfaces.MacroSetting(currentProfile);
-            //:추후에 visibility 옵션 히든으로 조정
+            macroSettingWindow = new MacroSetting(currentProfile);
+            //TODO : 추후에 메인 윈도우 먼저 못 끄게 하기
             macroSettingWindow.Show();
-
         }
 
         private void OnDeleteProfileClicked(object sender, RoutedEventArgs e)
         {
             if (currentProfile == 0)
             {
-                MessageBox.Show("프로필을 선택하십시오");
+                MessageBox.Show("Select a Profile");
                 return;
             }
 
-            if (MessageBox.Show("정말 삭제하시겠습니까?", "", MessageBoxButton.YesNo) == MessageBoxResult.No)
+            if (MessageBox.Show("Sure to Delete this Profile?", "", MessageBoxButton.YesNo) == MessageBoxResult.No)
             {
                 return;
             }
@@ -199,58 +205,18 @@ namespace AutoHotKey
         }
 
 
-        private void OnKeyInput(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            ((TextBox)sender).Text = e.Key.ToString();
-
-            //tbKeySet.Text = e.Key.ToString();
-            if (ReferenceEquals(sender, tbKeySet))
-            {
-                //currentKeyIn = int.Parse(KeyInterop.VirtualKeyFromKey(e.Key).ToString());
-            }
-        }
-
-        //TODO : 프로필 키 변경 내용 구현
-        private void OnCheckBoxChanged(object sender, RoutedEventArgs e)
-        {
-            const int VK_SPACE = 0x20;
-            const int VK_DELETE = 0x2E;
-
-            if (ReferenceEquals(sender, cbNoMod) && cbNoMod.IsChecked.Value)
-            {
-                cbAlt.IsChecked = false;
-                cbControl.IsChecked = false;
-                cbWindow.IsChecked = false;
-                cbShift.IsChecked = false;
-            }
-            else
-            {
-                var checkBox = sender as CheckBox;
-                if (checkBox != null && (!ReferenceEquals(sender, xCbDelete) && !ReferenceEquals(sender, xCbSpace)) && checkBox.IsChecked.Value)
-                {
-                    cbNoMod.IsChecked = false;
-                }
-            }
-
-            if (ReferenceEquals(sender, xCbSpace) && xCbSpace.IsChecked.Value)
-            {
-                tbKeySet.Text = "";
-                //currentKeyOut = VK_SPACE;
-                xCbDelete.IsChecked = false;
-            }
-            else if (ReferenceEquals(sender, xCbDelete) && xCbDelete.IsChecked.Value)
-            {
-                tbKeySet.Text = "";
-                //currentKeyOut = VK_DELETE;
-                xCbSpace.IsChecked = false;
-            }
-        }
-
         private void OnBtnSetProfileChangeKeyClicked(object sender, RoutedEventArgs e)
         {
+            if(HotKeyController.Instance.IsSettingProfileChangingKeys())
+            {
+                MessageBox.Show("You already Opened a Setting Window");
+                return;
+            }
 
-
-
+            //TODO : 이미 편집 창이 열려 있으면 버튼 작동시키지 않기 + 핫 키 멈추기(프로필 키 바꾸는 걸 컨트롤러에 알리기)
+            ProfileChangeKeysTable profileChangeKeysTable = new ProfileChangeKeysTable();
+            profileChangeKeysTable.Show();
         }
+
     }
 }

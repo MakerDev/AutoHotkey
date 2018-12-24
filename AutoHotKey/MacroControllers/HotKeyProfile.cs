@@ -29,11 +29,6 @@ namespace AutoHotKey.MacroControllers
             {
                 return 1;
             }
-            else if ((info.Trigger.Modifier == 0 && info.Trigger.Key >= 112 && info.Trigger.Key <= 121)
-                || (info.Trigger.Key == (int)VirtualKeyCode.ESCAPE && info.Trigger.Modifier == 0))
-            {
-                return 3;
-            }
 
             hotkeyList.Add(info);
 

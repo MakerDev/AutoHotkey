@@ -65,7 +65,7 @@
         </StackPanel>
 
         <StackPanel
-              Visibility="Visible"
+              Visibility="Hidden"
               HorizontalAlignment="Left" 
               Height="441" Margin="330,0,0,0" 
               VerticalAlignment="Top" 
@@ -74,41 +74,10 @@
 
             <StackPanel>
                 <TextBox 
-                    Visibility="Collapsed"
-                    Text=" Combination"
-                    IsReadOnly="True"
-                    FontSize="18"
-                    Margin="0, 30, 0, 0" BorderThickness="0,0,0,1" TextDecorations="{x:Null}"
-                />
-
-                <StackPanel 
-                    Visibility="Collapsed"
-                    Orientation="Horizontal"
-                    Margin="0, 8, 0, 0"
-                    >
-                    <CheckBox x:Name="cbNoMod" Content="NoMod"
-                              Margin="7, 0 , 0,0" 
-                              IsChecked="True"
-                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
-                    <CheckBox x:Name="cbControl" Content="Control"
-                              Margin="10, 0 , 0,0"
-                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
-                    <CheckBox x:Name="cbAlt" Content="Alt"
-                              Margin="10, 0 , 0,0"
-                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
-                    <CheckBox x:Name="cbShift" Content="Shift"
-                              Margin="10, 0 , 0,0"
-                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
-                    <CheckBox x:Name="cbWindow" Content="Window"
-                              Margin="10, 0 , 0,0"
-                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
-                </StackPanel>
-
-                <TextBox 
                     Text=" Key In"
                     IsReadOnly="True"
                     FontSize="18"
-                    Margin="0, 10, 0, 0" BorderThickness="0,0,0,1"
+                    Margin="0, 45, 0, 0" BorderThickness="0,0,0,1"
                     />
                 <StackPanel 
                     Orientation="Horizontal"
@@ -116,7 +85,7 @@
                     >
 
                     <Label
-                        Content="키를 입력하세요"
+                        Content="Type a Key"
                         FontSize="16"
                         />
 
@@ -176,7 +145,7 @@
                     >
 
                     <Label
-                        Content="키를 입력하세요"
+                        Content="Type a Key"
                         FontSize="16"
                         />
 

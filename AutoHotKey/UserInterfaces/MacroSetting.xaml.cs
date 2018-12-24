@@ -129,12 +129,6 @@ namespace AutoHotKey.UserInterfaces
 
         private void ClearHotkeySettingOptions()
         {
-            cbNoMod.IsChecked = false;
-            cbAlt.IsChecked = false;
-            cbControl.IsChecked = false;
-            cbWindow.IsChecked = false;
-            cbShift.IsChecked = false;
-
             cbNoModToDo.IsChecked = false;
             cbAltToDo.IsChecked = false;
             cbControlToDo.IsChecked = false;
@@ -163,7 +157,7 @@ namespace AutoHotKey.UserInterfaces
 
             HotkeyPair currentHotkey = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1);
             labelCurrentHotkey.Content = currentHotkey.Trigger.ToString();
-            labelCurrentToDo.Content = "핫 키:";
+            labelCurrentToDo.Content = "Hotkey :";
             labelCurrentToDo.Content += currentHotkey.Action.ToString();
 
             xTextBoxExplanation.Text = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1).Explanation;
@@ -190,26 +184,6 @@ namespace AutoHotKey.UserInterfaces
             }
 
             return digit;
-        }
-
-        private void OnCheckBoxChanged(object sender, RoutedEventArgs e)
-        {
-            if (ReferenceEquals(sender, cbNoMod) && cbNoMod.IsChecked.Value)
-            {
-                cbAlt.IsChecked = false;
-                cbControl.IsChecked = false;
-                cbWindow.IsChecked = false;
-                cbShift.IsChecked = false;
-
-            }
-            else
-            {
-                var checkBox = sender as CheckBox;
-                if (checkBox != null && checkBox.IsChecked.Value)
-                {
-                    cbNoMod.IsChecked = false;
-                }
-            }
         }
 
         private void OnToDoCheckBoxChanged(object sender, RoutedEventArgs e)
@@ -252,10 +226,10 @@ namespace AutoHotKey.UserInterfaces
         {
             if (mCurrentHotkeySelected == 0)
             {
-                MessageBox.Show("핫키를 선택하세요.");
+                MessageBox.Show("Select a Hotkey");
                 return;
             }
-            if (MessageBox.Show("정말 삭제하시겠습니까?", "", MessageBoxButton.YesNo) == MessageBoxResult.No)
+            if (MessageBox.Show("Really sure to delete this?", "", MessageBoxButton.YesNo) == MessageBoxResult.No)
             {
                 return;
             }
@@ -268,10 +242,9 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnOkClicked(object sender, RoutedEventArgs e)
         {
-            if ((!cbNoMod.IsChecked.Value && !cbControl.IsChecked.Value && !cbAlt.IsChecked.Value && !cbWindow.IsChecked.Value && !cbShift.IsChecked.Value)
-                || (String.IsNullOrEmpty(tbKeySet.Text)) || String.IsNullOrWhiteSpace(tbKeySet.Text))
+            if ((String.IsNullOrEmpty(tbKeySet.Text)) || String.IsNullOrWhiteSpace(tbKeySet.Text))
             {
-                MessageBox.Show("입력 조건을 정확히 설정하십시오.");
+                MessageBox.Show("Invalid Input Setting");
                 return;
             }
 
@@ -279,7 +252,7 @@ namespace AutoHotKey.UserInterfaces
             if ((!cbNoModToDo.IsChecked.Value && !cbControlToDo.IsChecked.Value && !cbAltToDo.IsChecked.Value
                 && !cbWindowToDo.IsChecked.Value && !cbShiftToDo.IsChecked.Value))
             {
-                MessageBox.Show("출력 조건을 정확히 설정하십시오.");
+                MessageBox.Show("Invalid Output Setting");
                 return;
             }
 
@@ -294,7 +267,7 @@ namespace AutoHotKey.UserInterfaces
 
                 if (count > 1)
                 {
-                    MessageBox.Show("출력 조건을 정확히 설정하십시오.");
+                    MessageBox.Show("Invalid Output Setting");
                     return;
                 }
                 else if(currentKeyOut==-1)
@@ -303,13 +276,8 @@ namespace AutoHotKey.UserInterfaces
                 }
             }
 
-
+            //입력은 반드시 단일키
             int modIn = EModifiers.NoMod;
-            if (cbAlt.IsChecked.Value) modIn |= EModifiers.Alt;
-            if (cbControl.IsChecked.Value) modIn |= EModifiers.Ctrl;
-            if (cbShift.IsChecked.Value) modIn |= EModifiers.Shift;
-            if (cbWindow.IsChecked.Value) modIn |= EModifiers.Win;
-
 
             int modOut = EModifiers.NoMod;
             if (cbAltToDo.IsChecked.Value) modOut |= EModifiers.Alt;
