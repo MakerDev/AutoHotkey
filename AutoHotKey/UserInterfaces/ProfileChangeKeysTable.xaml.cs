@@ -22,7 +22,10 @@ namespace AutoHotKey.UserInterfaces
     {
         int mNumOfProfiles = 0;
 
-        public ProfileChangeKeysTable()
+        //만약 프로필 내에서 핫 키를 변경중에 set switching 을 하려고 하면 한 줄만 표시하기 위한 인자
+        //0이 전달되면 그냥 메인 화면에서 실행한 것으로 간주
+        //-1이 전달되면 deactivating 키를 설정하려는 것
+        public ProfileChangeKeysTable(int fromProfile = 0)
         {
             InitializeComponent();
 
@@ -30,56 +33,90 @@ namespace AutoHotKey.UserInterfaces
 
             mNumOfProfiles = HotKeyController.Instance.GetNumOfProfiles();
 
-            //맨 윗줄
-            StackPanel firstLine = new StackPanel();
-            firstLine.Orientation = Orientation.Horizontal;
-            firstLine.Margin = new Thickness(20, 0, 0, 0);
-
-            Label label = CreateNewLabel("To->");
-            firstLine.Children.Add(label);
-
-            //TODO : 그냥 10X10 다 표시?
-            for (int i = 1; i <= mNumOfProfiles; i++)
-            {
-                firstLine.Children.Add(CreateNewLabel(i.ToString()));
-            }
-
-            xStackMain.Children.Add(firstLine);
-
-
-            for (int i = 0; i < mNumOfProfiles; i++)
-            {
-                StackPanel line = new StackPanel();
-                line.Orientation = Orientation.Horizontal;
-                line.Margin = new Thickness(20, 0, 0, 0);
-
-                line.Children.Add(CreateNewLabel((i + 1).ToString()));
-
-                for (int j = 0; j < mNumOfProfiles; j++)
-                {
-                    string tag = (i + 1).ToString() + (j + 1).ToString();
-                    int key = HotKeyController.Instance.GetProfileChangeKeyFromIndex(i, j);
-
-                    //자기 자신으로 가는 게 아니면
-                    if (key != -1)
-                    {
-                        string keyName = KeyInterop.KeyFromVirtualKey(key).ToString();
-                        line.Children.Add(CreateNewTextBox(tag, keyName));
-                    }
-                    else
-                    {
-                        line.Children.Add(CreateNewLabel("Self"));
-                    }
-
-                }
-
-                xStackMain.Children.Add(line);
-            }
+            Closing += OnProfileChangeKeyTabelClosed;
 
             int keyEsc = HotKeyController.Instance.GetEscapeKey();
             xTxtBoxEscape.Text = KeyInterop.KeyFromVirtualKey(keyEsc).ToString();
 
-            Closing += OnProfileChangeKeyTabelClosed;
+            if(fromProfile != -1)
+            {
+                xLabelTitle.Visibility = Visibility.Visible;
+                xStackDeactivatingSetting.Visibility = Visibility.Collapsed;
+
+                //맨 윗줄
+                //TODO : 맨 윗줄, 탈출키는 따로 설정하도록 한다.
+                StackPanel firstLine = new StackPanel();
+                firstLine.Orientation = Orientation.Horizontal;
+                firstLine.HorizontalAlignment = HorizontalAlignment.Center;
+
+                Label label = CreateNewLabel("To->");
+                firstLine.Children.Add(label);
+
+                int i = 0;
+
+                for (i = 1; i <= mNumOfProfiles; i++)
+                {
+                    firstLine.Children.Add(CreateNewLabel(i.ToString()));
+                }
+
+
+
+                xStackMain.Children.Add(firstLine);
+
+                i = 0;
+
+                if(fromProfile != 0)
+                {
+                    i = fromProfile-1;
+                }
+
+                while(i < mNumOfProfiles)
+                {
+                    StackPanel line = new StackPanel();
+                    line.Orientation = Orientation.Horizontal;
+                    line.HorizontalAlignment = HorizontalAlignment.Center;
+
+                    line.Children.Add(CreateNewLabel((i + 1).ToString()));
+
+                    for (int j = 0; j < mNumOfProfiles; j++)
+                    {
+                        string tag = (i + 1).ToString() + (j + 1).ToString();
+                        int key = HotKeyController.Instance.GetProfileChangeKeyFromIndex(i, j);
+
+                        //자기 자신으로 가는 게 아니면
+                        if (key != -1)
+                        {
+                            string keyName = KeyInterop.KeyFromVirtualKey(key).ToString();
+                            line.Children.Add(CreateNewTextBox(tag, keyName));
+                        }
+                        else
+                        {
+                            line.Children.Add(CreateNewLabel("Self"));
+                        }
+
+                    }
+
+                    xStackMain.Children.Add(line);     
+                    
+                    if(fromProfile != 0)
+                    {
+                        break;
+                    }
+
+                    i++;
+                }
+ 
+            }
+
+
+            Button saveButton = new Button();
+            saveButton.Content = "SAVE";
+            saveButton.Click += OnSaveBtnClicked;
+            saveButton.Width = 150;
+            saveButton.Height = 30;
+            saveButton.Margin = new Thickness(0, 20, 0, 15);
+
+            xStackMain.Children.Add(saveButton);
         }
 
         private void OnProfileChangeKeyTabelClosed(object sender, System.ComponentModel.CancelEventArgs e)
@@ -124,7 +161,8 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnKeyInput(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            string txtBefore = ((TextBox)sender).Text;
+            TextBox textBox = (TextBox)sender;
+            string txtBefore = textBox.Text;
 
             String tag = ((TextBox)sender).Tag.ToString();
 
@@ -139,7 +177,7 @@ namespace AutoHotKey.UserInterfaces
                 switch (temp)
                 {
                     case 0:
-                        ((TextBox)sender).Text = e.Key.ToString();
+                        textBox.Text = e.Key.ToString();
                         return;
                     case 1:
                         MessageBox.Show("Profile" + (re - temp * 10).ToString() + "Contains Same Hotkey");
@@ -165,10 +203,13 @@ namespace AutoHotKey.UserInterfaces
             if (result == 1)
             {
                 MessageBox.Show("Same Key Exists in this profile! ");
-                return;
-            }
 
-            ((TextBox)sender).Text = e.Key.ToString();
+                textBox.Text = txtBefore;
+            }
+            else
+            {
+                ((TextBox)sender).Text = e.Key.ToString();
+            }
         }
 
         private void OnSaveBtnClicked(object sender, RoutedEventArgs e)

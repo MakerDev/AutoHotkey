@@ -45,6 +45,7 @@ namespace AutoHotKey.MacroControllers
             return hotkeyList.ElementAt(index);
         }
 
+
         //파일을 저장할 때 반드시 기존 내용을 지워야 함. => 기존파일 삭제하고 새로 만들기
         public bool SaveProfile(string name)
         {
@@ -69,6 +70,8 @@ namespace AutoHotKey.MacroControllers
         {
             hotkeyList.RemoveAt(index);
         }
+
+        
 
         public bool LoadProfile(string name)
         {

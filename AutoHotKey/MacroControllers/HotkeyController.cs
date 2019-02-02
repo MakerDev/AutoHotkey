@@ -92,7 +92,6 @@ namespace AutoHotKey.MacroControllers
             mHookController = new WindowsHookController(window);
 
             mHookController.OnKeyEvent += OnSpecialKeyEvent;
-            mHookController.OnHotKeyEvent += OnHotkeyEvent;
 
             mHelper = window;
 
@@ -106,7 +105,8 @@ namespace AutoHotKey.MacroControllers
         {
             if (mProfiles.Count < profile)
             {
-                MessageBox.Show("Invalid Access");
+                MessageBox.Show("Invalid Access 0");
+
                 return -1;
             }
 
@@ -281,6 +281,11 @@ namespace AutoHotKey.MacroControllers
         //핫 키가 프로필 체인키와 중복되는 지 검사.
         private bool IsHaveSameKeyInChangeKey(int profileNum, int key)
         {
+            if(key == mProfileChangeKeyContainer.GetEscapeKey())
+            {
+                return true;
+            }
+
             for (int i = 0; i < MAX_NUM_OF_PROFILES; i++)
             {
                 if (key == mProfileChangeKeyContainer.GetProfileChangeKeyFromIndex(profileNum - 1, i))
@@ -377,7 +382,18 @@ namespace AutoHotKey.MacroControllers
                     CheckAndSetProfileChangeKey(true, i);
                 }
             }
+
+            //가장 마지막 프로필로 이동하는 키는 삭제
+            //ex 4개의 프로필이 있을 때 어떤 프로필을 삭제하면 3개의 프로필이 남게되니까
+            //4번 프로필로 이동하는 체인지키들은 전부 디폴트키로 재설정한다.
+
+            for(int i=0;  i< MAX_NUM_OF_PROFILES ; i++)
+            {
+                mProfileChangeKeyContainer.SetToDefaultByIndex(i, mProfiles.Count);
+            }
+
             SaveProfileChangeKeys();
+
             //프로필 개수를 벗어난 체인지키 작동 방지 -> 예를 들어 4번 프로필을 지웠으면 F4를 인식하면 안됨.
             UnRegisterHotKeyInternal();
             RegisterHotkeyInternal(mProfileActive);
@@ -386,6 +402,11 @@ namespace AutoHotKey.MacroControllers
         public List<HotkeyPair> GetHotkeyListOfCurrentProfile()
         {
             return mProfiles.ElementAt(mProfileOnEdit - 1).GetHotkeyList();
+        }
+
+        public List<HotkeyPair> GetHotkeyListOfProfile(int profileNum)
+        {
+            return mProfiles.ElementAt(profileNum - 1).GetHotkeyList();
         }
 
 
@@ -443,7 +464,7 @@ namespace AutoHotKey.MacroControllers
         {
             RegisterProfileChangingHotkeyInternal();
 
-            if (mProfileActive == 0)
+            if (profileNum <= 0)
                 return;
 
 
@@ -514,11 +535,12 @@ namespace AutoHotKey.MacroControllers
             _source.AddHook(HwndHook);
 
             int escape = mProfileChangeKeyContainer.GetEscapeKey();
+
             //ESC등록
             if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, (uint)escape))
             {
                 // handle error
-                MessageBox.Show("Couldn't register profile-changing key");
+                //MessageBox.Show("Couldn't register Exit key");
                 return;
             }
 
@@ -644,6 +666,11 @@ namespace AutoHotKey.MacroControllers
             {
                 Debug.WriteLine("키 업");
 
+                if (todoKey != 0)
+                {
+                    inputSimulator.Keyboard.KeyUp(todoKeyVirtualKey);
+                }
+
                 if (modifiers.Count != 0)
                 {
                     foreach (var todoModifier in modifiers)
@@ -652,11 +679,7 @@ namespace AutoHotKey.MacroControllers
                     }
                 }
 
-                if (todoKey != 0)
-                {
-                    inputSimulator.Keyboard.KeyUp(todoKeyVirtualKey);
 
-                }
             }
         }
 

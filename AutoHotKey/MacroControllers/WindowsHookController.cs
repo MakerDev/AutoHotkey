@@ -53,11 +53,6 @@ namespace AutoHotKey.MacroControllers
         private const int WM_SYSKEYUP = 0x0105;
 
         private static MainWindow mHelper = null;
-        private static HwndSource mSource;
-
-        //가장 마지막에 출력된 핫 키
-        //입력된 키가 핫 키 리스트에 있지만 가장 마지막에 출력된 핫키에 의한 것이라면, 핫 키 이벤트를 발생시키지 않고 그냥 정상적으로 넘긴다.
-        private HotkeyInfo mLastOut;
 
         //TODO : 추후에 훅 이벤트도 이 클래스로 리펙토링 하기
         [DllImport("User32.dll")]
@@ -88,7 +83,6 @@ namespace AutoHotKey.MacroControllers
         public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         public event EventHandler<KeyEventArgs> OnKeyEvent;
-        public event EventHandler<HotKeyEventArgs> OnHotKeyEvent;
 
 
         private LowLevelKeyboardProc mProc;
@@ -99,6 +93,15 @@ namespace AutoHotKey.MacroControllers
         //구현은 리스트에 없으면 바로 훅 함수를 정상적으로 리턴해버리는 식으로 구현해도 될 듯.
         private Dictionary<int, HotkeyInfo> mKeyEventPairs = new Dictionary<int, HotkeyInfo>();
         private Dictionary<int, bool> mIsPressedAlready = new Dictionary<int, bool>(); //이 키가 최초로 눌러진건지 판정하기 위함.
+
+        //가장 마지막에 출력된 핫 키
+        //입력된 키가 핫 키 리스트에 있지만 가장 마지막에 출력된 핫키에 의한 것이라면, 핫 키 이벤트를 발생시키지 않고 그냥 정상적으로 넘긴다.
+        private HotkeyInfo mLastOut;
+        private HotkeyInfo mLastIn;
+
+        //TODO : 여러개의 중복이 연쇄가 걸리는 경우를 위해 수정하기
+        private HotkeyInfo mLastOuts;
+        private HotkeyInfo mLastInputs;
 
 
         public WindowsHookController(MainWindow helper)
@@ -153,13 +156,21 @@ namespace AutoHotKey.MacroControllers
                 int vkCode = Marshal.ReadInt32(lParam);
 
                 //리스트에 없는 키는 무시 + 만약 최근의 출력으로 인해 이벤트가 발동된 것이라면 무시
-                if (!mKeyEventPairs.ContainsKey(vkCode) || IsHaveSameTriggerWithTheLastOutput(vkCode))
+                //입력은 한 번만 발생하니까 
+                if (!mKeyEventPairs.ContainsKey(vkCode))
+                {
+                    return CallNextHookEx(mHookID, nCode, wParam, lParam);
+                }
+
+                //출력에 있는 중복 문자 한 번만 제거를 하면 되므로 한 번 출력 이후에는 초기화. 꾹 눌러서 
+                //연속적으로 발생해도 한 번 출력할 때마다 재설정하므로 괜찮음
+                if (IsHaveSameTriggerWithTheLastOutput(vkCode))
                 {
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
                 }
 
                 //이미 한번 눌러졌으면 이벤트 발생X, 그냥 입력 무시 단, z=shift같은 특수키에만 해당.
-                if(mIsPressedAlready[vkCode] && mKeyEventPairs[vkCode].Key==0)
+                if (mIsPressedAlready[vkCode] && mKeyEventPairs[vkCode].Key==0)
                 {
                     return new IntPtr(5);
                 }
@@ -168,8 +179,9 @@ namespace AutoHotKey.MacroControllers
                 if (OnKeyEvent != null)
                 {
                     mLastOut = new HotkeyInfo(mKeyEventPairs[vkCode].Key, mKeyEventPairs[vkCode].Modifier);
-                    OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], false));
+                    mLastIn = new HotkeyInfo(vkCode, 0);
                     Debug.WriteLine("현재 아웃풋" + mLastOut.ToString());
+                    OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], false));
                 }
 
                 mIsPressedAlready[vkCode] = true;
@@ -183,7 +195,7 @@ namespace AutoHotKey.MacroControllers
 
                 //여기서 등록되지 않은 키일 경우를 처리했으므로 아래에서는 무조건 등록된 키에 대한 처리만 하면 됨.
                 //따라서 아래부터는 0이 아닌 값을 리턴해 버려야함.
-                if (!mKeyEventPairs.ContainsKey(vkCode) || IsHaveSameTriggerWithTheLastOutput(vkCode))
+                if (!mKeyEventPairs.ContainsKey(vkCode) || (IsHaveSameTriggerWithTheLastOutput(vkCode) && vkCode != mLastIn.Key))
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
 
                 //만약 f=ctrl + z로 설정하면 f, ctrl과 z에서 각각 keyup 이벤트가 발생하여 keyup이벤트가 세 번 발생한다.
@@ -192,7 +204,8 @@ namespace AutoHotKey.MacroControllers
                 {
                     OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], true));
                     Debug.WriteLine("업 이벤트 발생" + vkCode.ToString());
-                    mLastOut = null;    //키를 땔 때는 최근 아웃풋을 초기화함.
+                    //mLastOut = null;    //키를 땔 때는 최근 아웃풋을 초기화함.
+                    mLastIn = null;
                 }
 
                 mIsPressedAlready[vkCode] = false;

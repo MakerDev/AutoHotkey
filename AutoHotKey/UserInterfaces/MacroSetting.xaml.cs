@@ -52,8 +52,6 @@ namespace AutoHotKey.UserInterfaces
         }
 
 
-
-
         private void EndEditting(object sender, System.ComponentModel.CancelEventArgs e)
         {
 
@@ -135,12 +133,14 @@ namespace AutoHotKey.UserInterfaces
             cbWindowToDo.IsChecked = false;
             cbShiftToDo.IsChecked = false;
 
+            xCbDeleteToDo.IsChecked = false;
+            xCbSpaceToDo.IsChecked = false;
+
             tbKeySet.Text = "";
             tbKeySetToDo.Text = "";
 
             currentKeyIn = -1;
             currentKeyOut = -1;
-
         }
 
 
@@ -150,14 +150,14 @@ namespace AutoHotKey.UserInterfaces
             Button button = sender as Button;
             string btnName = (string)button.Content;
 
-            int digit = GetHotKeyNumberFromButtonNameInternal(btnName);
+            int digit = GetHotKeyNumberFromButtonName(btnName);
 
             mCurrentHotkeySelected = int.Parse(btnName.Substring(0, digit).ToString());
 
 
             HotkeyPair currentHotkey = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1);
             labelCurrentHotkey.Content = currentHotkey.Trigger.ToString();
-            labelCurrentToDo.Content = "Hotkey :";
+            labelCurrentToDo.Content = "Hotkey : ";
             labelCurrentToDo.Content += currentHotkey.Action.ToString();
 
             xTextBoxExplanation.Text = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1).Explanation;
@@ -165,7 +165,7 @@ namespace AutoHotKey.UserInterfaces
             sHotKeyClicked.Visibility = Visibility.Visible;
         }
 
-        private int GetHotKeyNumberFromButtonNameInternal(string name)
+        public static int GetHotKeyNumberFromButtonName(string name)
         {
             //숫자가 두 자리 이상일때도 처리하기 위해
             int digit = 0;
@@ -330,6 +330,9 @@ namespace AutoHotKey.UserInterfaces
         private void OnKeyInput(object sender, System.Windows.Input.KeyEventArgs e)
         {
             ((TextBox)sender).Text = e.Key.ToString();
+
+            //TODO : 정식버전에서는 이거 지우기.
+            MessageBox.Show(KeyInterop.VirtualKeyFromKey(e.Key).ToString());
 
             //tbKeySet.Text = e.Key.ToString();
             if (ReferenceEquals(sender, tbKeySet))

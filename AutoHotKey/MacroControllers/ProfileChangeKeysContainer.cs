@@ -51,7 +51,14 @@ namespace AutoHotKey.MacroControllers
         //키 중복등의 문제로 그 자리의 키를 기본전환키로 변경해야할 시
         public void SetToDefaultByIndex(int from, int to)
         {
-            mProfileChangeKeys[from, to] = VK_F1 + to;
+            if(from==to)
+            {
+                mProfileChangeKeys[from, to] = -1;
+            }
+            else
+            {
+                mProfileChangeKeys[from, to] = VK_F1 + to;
+            }
         }
 
         //TODO : 기존 핫 키와의 중복체크는 컨트롤러에서 했다고 가정함.

@@ -31,8 +31,10 @@ namespace AutoHotKey
         private int currentProfile = 0; //만약 아무 프로필도 선택되지 않은 상태일때는 0
 
         private InformationWindow mInfoWindow = null;
-        private MacroSetting macroSettingWindow = null;
+        //private MacroSetting macroSettingWindow = null;
+        private MacroSettingWithPicture mSettingWindow = null;
 
+        //TODO : 이미 프로그램이 실행중인 경우 두 번째 프로그램은 실행시키지 않도록 한다.
         public MainWindow()
         {
             InitializeComponent();
@@ -51,18 +53,33 @@ namespace AutoHotKey
             ni = new System.Windows.Forms.NotifyIcon();
             ni.Icon = new System.Drawing.Icon("Main2.ico");
             ni.Visible = true;
-            ni.DoubleClick +=
-                delegate (object sender, EventArgs args)
-                {
-                    this.Show();
-                    this.WindowState = WindowState.Normal;
-                };
+            ni.DoubleClick += Open;
 
+
+            System.Windows.Forms.ContextMenu contextMenu = new System.Windows.Forms.ContextMenu();
+            contextMenu.MenuItems.Add("Open", new EventHandler(Open));
+            contextMenu.MenuItems.Add("Exit", new EventHandler(Exit));
+
+            ni.ContextMenu = contextMenu;
 
             mInfoWindow = new InformationWindow();
             mInfoWindow.ChangeCurrentProfile(-1);
 
             mInfoWindow.Show();
+
+            this.WindowState = WindowState.Minimized;
+            Hide();
+        }
+
+        private void Exit(object sender, EventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void Open(object sender, EventArgs args)
+        {
+            this.Show();
+            this.WindowState = WindowState.Normal;
         }
 
         protected override void OnStateChanged(EventArgs e)
@@ -83,6 +100,9 @@ namespace AutoHotKey
         private void OnMainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             ni.Visible = false;
+            ni.Dispose();
+            ni = null;
+
             mInfoWindow.Close();
         }
 
@@ -100,7 +120,7 @@ namespace AutoHotKey
         private void OnProfileClicked(object sender, RoutedEventArgs e)
         {
             string name = (string)((Button)sender).Content;
-            string num = name[name.Length - 1].ToString();
+            string num = name.Substring(7, name.Length - 7);
 
             currentProfile = int.Parse(num);
 
@@ -156,10 +176,16 @@ namespace AutoHotKey
 
         private void OnAddProfileClicked(object sender, RoutedEventArgs e)
         {
-            if(HotKeyController.Instance.GetNumOfProfiles() == HotKeyController.MAX_NUM_OF_PROFILES)
+            if (HotKeyController.Instance.GetNumOfProfiles() == HotKeyController.MAX_NUM_OF_PROFILES)
             {
                 MessageBox.Show("Can't Add more Profile");
 
+                return;
+            }
+
+            if (HotKeyController.Instance.IsEdittingProfile())
+            {
+                MessageBox.Show("You're editing a profile. Please end editing before add a profile");
                 return;
             }
 
@@ -182,9 +208,10 @@ namespace AutoHotKey
                 return;
             }
 
-            macroSettingWindow = new MacroSetting(currentProfile);
+
             //TODO : 추후에 메인 윈도우 먼저 못 끄게 하기
-            macroSettingWindow.Show();
+            mSettingWindow = new MacroSettingWithPicture(currentProfile);
+            mSettingWindow.Show();
         }
 
         private void OnDeleteProfileClicked(object sender, RoutedEventArgs e)
@@ -200,6 +227,12 @@ namespace AutoHotKey
                 return;
             }
 
+            if (HotKeyController.Instance.IsEdittingProfile())
+            {
+                MessageBox.Show("You're Editing a profile. Please End editing before delete a profile");
+                return;
+            }
+
             HotKeyController.Instance.DeleteProfile(currentProfile);
             ClearViewInternal();
         }
@@ -207,14 +240,18 @@ namespace AutoHotKey
 
         private void OnBtnSetProfileChangeKeyClicked(object sender, RoutedEventArgs e)
         {
-            if(HotKeyController.Instance.IsSettingProfileChangingKeys())
+            MenuItem item = sender as MenuItem;
+
+            int param = Convert.ToInt32(item.Tag.ToString());
+
+            if (HotKeyController.Instance.IsSettingProfileChangingKeys())
             {
                 MessageBox.Show("You already Opened a Setting Window");
                 return;
             }
 
             //TODO : 이미 편집 창이 열려 있으면 버튼 작동시키지 않기 + 핫 키 멈추기(프로필 키 바꾸는 걸 컨트롤러에 알리기)
-            ProfileChangeKeysTable profileChangeKeysTable = new ProfileChangeKeysTable();
+            ProfileChangeKeysTable profileChangeKeysTable = new ProfileChangeKeysTable(param);
             profileChangeKeysTable.Show();
         }
 
