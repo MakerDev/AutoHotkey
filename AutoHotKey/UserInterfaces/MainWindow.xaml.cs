@@ -30,10 +30,15 @@ namespace AutoHotKey
 
         private int currentProfile = 0; //만약 아무 프로필도 선택되지 않은 상태일때는 0
 
+
+        private List<Window> mWindowsToClose = new List<Window>();
+
         private InformationWindow mInfoWindow = null;
         //private MacroSetting macroSettingWindow = null;
         private MacroSettingWithPicture mSettingWindow = null;
+        
 
+        //TODO : 현재 창에서 연 다른 창들은 현재 창이 꺼지면 함께 꺼지도록 한다.
         //TODO : 이미 프로그램이 실행중인 경우 두 번째 프로그램은 실행시키지 않도록 한다.
         public MainWindow()
         {
@@ -47,7 +52,9 @@ namespace AutoHotKey
 
             scrViewerProfiles.Content = list;
 
+            //TODO : loaded쓸 지 그냥 여기서 실행 시킬 지 결정
             this.Loaded += OnMainWindowLoaded;
+
             Closing += OnMainWindowClosing;
 
             ni = new System.Windows.Forms.NotifyIcon();
@@ -65,10 +72,19 @@ namespace AutoHotKey
             mInfoWindow = new InformationWindow();
             mInfoWindow.ChangeCurrentProfile(-1);
 
-            mInfoWindow.Show();
+            mWindowsToClose.Add(mInfoWindow);
 
-            this.WindowState = WindowState.Minimized;
-            Hide();
+            mInfoWindow.Show();
+        }
+
+        private void OnBtnHelpClicked(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Tips : If you can't type a key you want to use for output, You can use 'select key' button to visaully select the key instead of trying to type it in the textbox!");
+        }
+
+        private void OnExitBtnClicked(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
         }
 
         private void Exit(object sender, EventArgs e)
@@ -103,7 +119,10 @@ namespace AutoHotKey
             ni.Dispose();
             ni = null;
 
-            mInfoWindow.Close();
+            foreach(var window in mWindowsToClose)
+            {
+                window.Close();
+            }
         }
 
         //생성자가 실행되었을 때 발동
@@ -111,6 +130,10 @@ namespace AutoHotKey
         {
             HotKeyController.Instance.RegisterHelper(this);
             HotKeyController.Instance.ProfileChanged += OnActiveProfileChanged;
+
+
+            this.WindowState = WindowState.Minimized;
+            Hide();
         }
 
         // : 만약 프로필 순서 바꾸는 기능을 추가하려면 구현은 파일이름을 바꾸고 다시 로딩하는 걸로 구현하면 됨 
@@ -211,6 +234,8 @@ namespace AutoHotKey
 
             //TODO : 추후에 메인 윈도우 먼저 못 끄게 하기
             mSettingWindow = new MacroSettingWithPicture(currentProfile);
+
+            mWindowsToClose.Add(mSettingWindow);
             mSettingWindow.Show();
         }
 
@@ -252,6 +277,8 @@ namespace AutoHotKey
 
             //TODO : 이미 편집 창이 열려 있으면 버튼 작동시키지 않기 + 핫 키 멈추기(프로필 키 바꾸는 걸 컨트롤러에 알리기)
             ProfileChangeKeysTable profileChangeKeysTable = new ProfileChangeKeysTable(param);
+
+            mWindowsToClose.Add(profileChangeKeysTable);
             profileChangeKeysTable.Show();
         }
 

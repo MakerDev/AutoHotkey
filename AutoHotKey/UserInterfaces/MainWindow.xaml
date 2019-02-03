@@ -14,7 +14,7 @@
         <StackPanel>
             <Menu IsMainMenu="True" VerticalContentAlignment="Center" >
                 <MenuItem                   
-                    Margin="0,0,0,0"
+                    Margin="8,0,0,0"
                     Header="_Options">
                     <MenuItem                          
                         Tag="-1"
@@ -26,12 +26,12 @@
                         Click="OnBtnSetProfileChangeKeyClicked" 
                         />
                     <Separator/>
-                    <MenuItem Header="_Exit"/>
+                    <MenuItem Header="_Exit"  Click="OnExitBtnClicked"/>
                 </MenuItem>
                 <MenuItem
                     Margin="8, 0, 0, 0"
                     Header="Help">
-                    <MenuItem Header="_Credit Key" />
+                    <MenuItem Header="_Tips" Click="OnBtnHelpClicked"/>
                 </MenuItem>
             </Menu>
         </StackPanel>
@@ -46,7 +46,7 @@
         <StackPanel
               Visibility="Visible"
               HorizontalAlignment="Left" 
-              Height="441" Margin="330,0,0,0" 
+              Height="431" Margin="330,0,0,0" 
               VerticalAlignment="Top" 
               Width="324"
               Name="sProfileContent">

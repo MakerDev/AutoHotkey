@@ -94,15 +94,10 @@ namespace AutoHotKey.MacroControllers
         private Dictionary<int, HotkeyInfo> mKeyEventPairs = new Dictionary<int, HotkeyInfo>();
         private Dictionary<int, bool> mIsPressedAlready = new Dictionary<int, bool>(); //이 키가 최초로 눌러진건지 판정하기 위함.
 
-        //가장 마지막에 출력된 핫 키
+        //가장 마지막에 눌리거나 UP된 핫 키
         //입력된 키가 핫 키 리스트에 있지만 가장 마지막에 출력된 핫키에 의한 것이라면, 핫 키 이벤트를 발생시키지 않고 그냥 정상적으로 넘긴다.
-        private HotkeyInfo mLastOut;
-        private HotkeyInfo mLastIn;
-
-        //TODO : 여러개의 중복이 연쇄가 걸리는 경우를 위해 수정하기
-        private HotkeyInfo mLastOuts;
-        private HotkeyInfo mLastInputs;
-
+        private HotkeyInfo mLastHotkeyDown;
+        private HotkeyInfo mLastHotkeyUp;
 
         public WindowsHookController(MainWindow helper)
         {
@@ -162,12 +157,34 @@ namespace AutoHotKey.MacroControllers
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
                 }
 
-                //출력에 있는 중복 문자 한 번만 제거를 하면 되므로 한 번 출력 이후에는 초기화. 꾹 눌러서 
-                //연속적으로 발생해도 한 번 출력할 때마다 재설정하므로 괜찮음
-                if (IsHaveSameTriggerWithTheLastOutput(vkCode))
+                if (mLastHotkeyDown != null)
                 {
-                    return CallNextHookEx(mHookID, nCode, wParam, lParam);
+                    if (mLastHotkeyDown.Key == vkCode)
+                    {
+                        mLastHotkeyDown.Key = -1;
+                    }
+                    else if (mLastHotkeyDown.Modifier == vkCode)
+                    {
+                        mLastHotkeyDown.Modifier = -1;
+                    }
+
+                    if (mKeyEventPairs.ContainsKey(mLastHotkeyDown.Key) && mKeyEventPairs.ContainsKey(mLastHotkeyDown.Modifier))
+                    {
+                        return CallNextHookEx(mHookID, nCode, wParam, lParam);
+                    }
+                    else
+                    {
+                        if (mLastHotkeyDown.Key == -1 || mLastHotkeyDown.Modifier == -1)
+                        {
+                            mLastHotkeyDown = null;
+
+                            return CallNextHookEx(mHookID, nCode, wParam, lParam);
+                        }
+                    }
                 }
+
+
+
 
                 //이미 한번 눌러졌으면 이벤트 발생X, 그냥 입력 무시 단, z=shift같은 특수키에만 해당.
                 if (mIsPressedAlready[vkCode] && mKeyEventPairs[vkCode].Key==0)
@@ -178,12 +195,12 @@ namespace AutoHotKey.MacroControllers
                 //처음 발동 될 때 가장 최근 아웃풋을 설정해놈.
                 if (OnKeyEvent != null)
                 {
-                    mLastOut = new HotkeyInfo(mKeyEventPairs[vkCode].Key, mKeyEventPairs[vkCode].Modifier);
-                    mLastIn = new HotkeyInfo(vkCode, 0);
-                    Debug.WriteLine("현재 아웃풋" + mLastOut.ToString());
+                    mLastHotkeyDown = new HotkeyInfo(mKeyEventPairs[vkCode].Key, mKeyEventPairs[vkCode].Modifier);
+                    Debug.WriteLine("현재 아웃풋" + mLastHotkeyDown.ToString());
                     OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], false));
                 }
 
+                //Shift같은 특수키의 keydown이벤트가 여러변 입력되는 걸 막기 위함.
                 mIsPressedAlready[vkCode] = true;
 
                 //0이 아닌 값을 리턴하면 입력을 중간에서 없애버릴 수 있다.
@@ -195,17 +212,46 @@ namespace AutoHotKey.MacroControllers
 
                 //여기서 등록되지 않은 키일 경우를 처리했으므로 아래에서는 무조건 등록된 키에 대한 처리만 하면 됨.
                 //따라서 아래부터는 0이 아닌 값을 리턴해 버려야함.
-                if (!mKeyEventPairs.ContainsKey(vkCode) || (IsHaveSameTriggerWithTheLastOutput(vkCode) && vkCode != mLastIn.Key))
+                if (!mKeyEventPairs.ContainsKey(vkCode))
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
+
+                if (mLastHotkeyUp != null)
+                {
+                    if (mLastHotkeyUp.Key == vkCode)
+                    {
+                        mLastHotkeyUp.Key = -1;
+                    }
+                    else if (mLastHotkeyUp.Modifier == vkCode)
+                    {
+                        mLastHotkeyUp.Modifier = -1;
+                    }
+
+                    if (mKeyEventPairs.ContainsKey(mLastHotkeyUp.Key) && mKeyEventPairs.ContainsKey(mLastHotkeyUp.Modifier))
+                    {
+                        return CallNextHookEx(mHookID, nCode, wParam, lParam);
+                    }
+                    else
+                    {
+                        if(mLastHotkeyUp.Key == -1 || mLastHotkeyUp.Modifier == -1)
+                        {
+                            mLastHotkeyUp = null;
+
+                            return CallNextHookEx(mHookID, nCode, wParam, lParam);
+                        }
+                    }
+                }
+
 
                 //만약 f=ctrl + z로 설정하면 f, ctrl과 z에서 각각 keyup 이벤트가 발생하여 keyup이벤트가 세 번 발생한다.
                 //
                 if (OnKeyEvent != null)
                 {
+                    //기존데이터의 변질을 막기 위해.
+                    mLastHotkeyUp = new HotkeyInfo(mKeyEventPairs[vkCode].Key, mKeyEventPairs[vkCode].Modifier);
+
                     OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], true));
                     Debug.WriteLine("업 이벤트 발생" + vkCode.ToString());
                     //mLastOut = null;    //키를 땔 때는 최근 아웃풋을 초기화함.
-                    mLastIn = null;
                 }
 
                 mIsPressedAlready[vkCode] = false;
@@ -218,17 +264,5 @@ namespace AutoHotKey.MacroControllers
 
         }
 
-
-        //이번 입력과 가장 최근 아웃풋이 겹친다면 그건 연쇄라는 의미이니 무시해 버리기 위해 체크
-        private bool IsHaveSameTriggerWithTheLastOutput(int vkCode)
-        {
-            if (mLastOut == null)
-                return false;
-
-            if (mLastOut.Key == vkCode)
-                return true;
-            else
-                return false;
-        }
     }
 }

@@ -31,11 +31,9 @@ namespace AutoHotKey.UserInterfaces
             InitializeComponent();
 
             mSettingWindow = settingWindow;
-
-            Closing += SpecialKeySelection_Closing;
         }
 
-        private void SpecialKeySelection_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OnBtnOkClicked(object sender, RoutedEventArgs e)
         {
             if(mSettingWindow != null)
             {

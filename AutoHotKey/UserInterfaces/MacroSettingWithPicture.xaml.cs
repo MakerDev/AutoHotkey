@@ -39,6 +39,7 @@ namespace AutoHotKey.UserInterfaces
         private bool mIsSelectingKey = false;
         private string mBtnColorBefore = null;
         private bool mIsSelectingSpecialKey = false;
+        private List<Window> mWindowsToClose = new List<Window>();
 
 
         public MacroSettingWithPicture(int profileNum)
@@ -47,7 +48,7 @@ namespace AutoHotKey.UserInterfaces
 
             currentProfile = profileNum;
 
-            Closing += EndEditting;
+            Closing += OnMacroSettingClosing;
             xLabelCurrentProfile.Content = "Current Profile : " + profileNum.ToString();
 
             HotKeyController.Instance.StartEditProfile(profileNum);
@@ -67,14 +68,15 @@ namespace AutoHotKey.UserInterfaces
             }
         }
 
-        private void EndEditting(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OnMacroSettingClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
 
             HotKeyController.Instance.EndEditting();
 
-            //throw new NotImplementedException();
-
-            //TODO:편집 창 종료 시 할 일, 세팅 창 켤 때 프로필 창 끄고 세팅 창 끌 때 프로필 창 다시 열기
+            foreach (var window in mWindowsToClose)
+            {
+                window.Close();
+            }
         }
 
 
@@ -178,9 +180,9 @@ namespace AutoHotKey.UserInterfaces
             {
                 tbKeySetToDo.Text = KeyInterop.KeyFromVirtualKey(keycode).ToString();
                 currentKeyOut = keycode;
-                
+
                 //현재는 출력 값을 선택하기 위해 버튼을 누르는 것이므로 현재 버튼은 그대로 유지되어야 하기 때문
-                return; 
+                return;
             }
 
             if (GetHotkeyIndexByKeycode(keycode, mHotkeyList) != -1)
@@ -372,15 +374,18 @@ namespace AutoHotKey.UserInterfaces
 
             //TODO : 이미 편집 창이 열려 있으면 버튼 작동시키지 않기 + 핫 키 멈추기(프로필 키 바꾸는 걸 컨트롤러에 알리기)
             ProfileChangeKeysTable profileChangeKeysTable = new ProfileChangeKeysTable(currentProfile);
+            mWindowsToClose.Add(profileChangeKeysTable);
             profileChangeKeysTable.Show();
         }
 
         private void OnBtnOtherKeys_Click(object sender, RoutedEventArgs e)
         {
-            if(!mIsSelectingSpecialKey)
+            if (!mIsSelectingSpecialKey)
             {
-                new SpecialKeySelection(this).Show();
+                SpecialKeySelection specialKeySelection = new SpecialKeySelection(this);
 
+                mWindowsToClose.Add(specialKeySelection);
+                specialKeySelection.Show();
                 mIsSelectingSpecialKey = true;
             }
             else

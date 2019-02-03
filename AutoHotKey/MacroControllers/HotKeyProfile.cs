@@ -13,7 +13,7 @@ namespace AutoHotKey.MacroControllers
     [Serializable()]
     class HotKeyProfile
     {
-        public static int MAXHOTKEY = 40;
+        public static int MAXHOTKEY = 60;
 
         private List<HotkeyPair> hotkeyList = new List<HotkeyPair>();
         public HotkeyInfo ChangeKey { get; private set; }  //프로필 체인지 키

@@ -20,8 +20,8 @@ namespace AutoHotKey.MacroControllers
     public class HotkeyInfo
     {
         //만약 key==0이라면 Z=Shift처럼 특수키 매핑인 것으로 간주함. 
-        public int Key { get; private set; }    //윈도우 virtualKeyCode값
-        public int Modifier { get; private set; } //EModifiers 값
+        public int Key { get;  set; }    //윈도우 virtualKeyCode값
+        public int Modifier { get;  set; } //EModifiers 값
 
         public HotkeyInfo(IntPtr lParam)
         {
@@ -81,5 +81,7 @@ namespace AutoHotKey.MacroControllers
         {
             return Key ^ Modifier;
         }
+
+        
     }
 }

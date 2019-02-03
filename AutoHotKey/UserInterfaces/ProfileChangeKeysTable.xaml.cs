@@ -48,6 +48,7 @@ namespace AutoHotKey.UserInterfaces
                 StackPanel firstLine = new StackPanel();
                 firstLine.Orientation = Orientation.Horizontal;
                 firstLine.HorizontalAlignment = HorizontalAlignment.Center;
+                firstLine.Margin = new Thickness(0, 20, 0, 0);
 
                 Label label = CreateNewLabel("To->");
                 firstLine.Children.Add(label);
