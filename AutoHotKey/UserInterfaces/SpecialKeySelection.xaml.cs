@@ -30,7 +30,17 @@ namespace AutoHotKey.UserInterfaces
         {
             InitializeComponent();
 
+            Closing += SpecialKeySelection_Closing;
+
             mSettingWindow = settingWindow;
+        }
+
+        private void SpecialKeySelection_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (mSettingWindow != null)
+            {
+                mSettingWindow.EndSelectingSpecialKey(-1);
+            }
         }
 
         private void OnBtnOkClicked(object sender, RoutedEventArgs e)

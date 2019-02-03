@@ -59,7 +59,7 @@
                     Content="Mouse Keys" />
                 <CheckBox
                     Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
-                    Tag="4"
+                    Tag="3"
                     Margin="15, 0, 0, 10"
                     Content="  Middle Button"/>
                 <CheckBox
