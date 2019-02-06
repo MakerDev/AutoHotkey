@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace AutoHotKey.MacroControllers
@@ -40,6 +41,12 @@ namespace AutoHotKey.MacroControllers
         public override string ToString()
         {
             string info = "";
+
+            //마우스 이벤트일 경우
+            if(Key >= 1 && Key <= 4)
+            {
+                return GetMouseEventExplanation(Key, Modifier);
+            }
 
             if ((Modifier & EModifiers.Ctrl) == EModifiers.Ctrl)
             {
@@ -82,6 +89,20 @@ namespace AutoHotKey.MacroControllers
             return Key ^ Modifier;
         }
 
-        
+        public static string GetMouseEventExplanation(int button, int mouseEvent)
+        {
+            string explanation = "";
+
+            if (button == 1) { explanation = "LeftMouseButton"; }
+            if (button == 2) { explanation = "RightMouseButton"; }
+            if (button == 4) { explanation = "MiddleMouseButton"; }
+
+            if (mouseEvent == 0) { explanation += " Click"; }
+            if (mouseEvent == 1) { explanation += " Double Click"; }
+            if (mouseEvent == 2) { explanation += " Down"; }
+
+            return explanation;
+        }
+
     }
 }

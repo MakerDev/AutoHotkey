@@ -64,14 +64,7 @@ namespace AutoHotKey.MacroControllers
             filestream.Close();
 
             return true;
-        }
-
-        public void DeleteHotKey(int index)
-        {
-            hotkeyList.RemoveAt(index);
-        }
-
-        
+        }       
 
         public bool LoadProfile(string name)
         {
@@ -92,6 +85,11 @@ namespace AutoHotKey.MacroControllers
             {
                 return false;
             }
+        }
+
+        public void DeleteHotKey(int index)
+        {
+            hotkeyList.RemoveAt(index);
         }
 
         public bool IsSameHotkeyExists(HotkeyInfo trriger)

@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AutoHotKey.UserInterfaces"
         mc:Ignorable="d"
-        Title="MacroSetting" Height="480" Width="1700" ResizeMode="NoResize">
+        Name="SettingWindow"
+        Title="MacroSetting" ResizeMode="NoResize" Height="500" Width="1700">
 
     <Window.Resources>
         <Style x:Key="Keyboard" TargetType="Button">
@@ -43,7 +44,9 @@
     </Window.Resources>
 
 
-    <Grid>
+    <Grid 
+        Name="xGridMain"
+        RenderTransformOrigin="0,0">
         <Grid>
             <Image HorizontalAlignment="Left"         
                Height="322" Margin="24,86,0,0" 
@@ -79,9 +82,11 @@
 
             <Label x:Name="labelCurrentToDo"
                 Content="Currnet Setting : "
-                HorizontalAlignment ="Center"
-                FontSize="23"
-                Margin="10,100,51,0" BorderThickness="0,0,0,0" FontWeight="Bold"/>
+                HorizontalAlignment ="Center"    
+                HorizontalContentAlignment="Center"
+                FontSize="18"       
+                Width="320"
+                Margin="0,100,0,0" BorderThickness="0,0,0,0" FontWeight="Bold" />
             <TextBox 
                 x:Name="xTextBoxExplanation"
                 BorderThickness="1,2,2,2"
@@ -145,9 +150,19 @@
                     FontSize="20"
                     Margin="0, 15, 0, 0" BorderThickness="0,0,0,1"
                 />
+                <Label
+                    Name="xLabelNoModifier"
+                    Content="No modifier with Mouse Events"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    FontSize="16"
+                    Visibility="Collapsed"
+                    />
 
                 <StackPanel 
+                    Name="xStackModifierSetter"
                     Orientation="Horizontal"
+                    Visibility="Visible"
                     HorizontalAlignment="Center"
                     Margin="0, 8, 0, 0"
                     >
@@ -166,8 +181,8 @@
                     <CheckBox x:Name="cbWindowToDo" Content="Window"
                               Margin="10, 0 , 0,0"
                               Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
-
                 </StackPanel>
+                
 
                 <TextBox 
                     Text="                   Key Out"

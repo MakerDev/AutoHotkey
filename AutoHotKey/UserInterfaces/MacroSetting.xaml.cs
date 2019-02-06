@@ -20,7 +20,7 @@ namespace AutoHotKey.UserInterfaces
     /// <summary>
     /// MacroSetting.xaml에 대한 상호 작용 논리
     /// </summary>
-    public partial class MacroSetting : Window
+    public partial class MacroSetting : Window, ISettingWindow
     {
         private const int MAXHOTKEY = 35;
         const int VK_SPACE = 0x20;
@@ -29,9 +29,12 @@ namespace AutoHotKey.UserInterfaces
         //버튼 순서로 어떤 핫 키 인지 구분
         private List<Button> hotkeyListBtn = new List<Button>();
         private StackPanel list;
-        private int currentKeyIn = -1;
-        private int currentKeyOut = -1;
+        private int currentKeyIn = 0;
+        private int currentKeyOut = 0;
         private int mCurrentHotkeySelected = 0; //현재 버튼에 의해 눌린 핫키
+        private bool mIsSelectingSpecialKey = false;
+
+        List<Window> mWindowsToClose = new List<Window>();
 
         public MacroSetting(int profileNum)
         {
@@ -54,12 +57,47 @@ namespace AutoHotKey.UserInterfaces
 
         private void EndEditting(object sender, System.ComponentModel.CancelEventArgs e)
         {
-
             HotKeyController.Instance.EndEditting();
 
-            //throw new NotImplementedException();
+            foreach(var window in mWindowsToClose)
+            {
+                if (window != null)
+                {
+                    window.Close();
+                }
+            }
+        }
 
-            //TODO:편집 창 종료 시 할 일, 세팅 창 켤 때 프로필 창 끄고 세팅 창 끌 때 프로필 창 다시 열기
+        public void EndSelectingSpecialKey(int selectedKeycode)
+        {
+            mIsSelectingSpecialKey = false;
+
+            if (selectedKeycode != -1)
+            {
+                currentKeyOut = selectedKeycode;
+
+                //0은 선택되지 않음을 나타내는 예약숫자임
+                if (currentKeyOut < 0)
+                {
+                    tbKeySetToDo.Text = GetMouseEventExplanation(currentKeyOut);
+                    xStackModifierSetter.Visibility = Visibility.Collapsed;
+                    xLabelNoModifier.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    tbKeySetToDo.Text = KeyInterop.KeyFromVirtualKey(currentKeyOut).ToString();
+                    xStackModifierSetter.Visibility = Visibility.Visible;
+                    xLabelNoModifier.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private string GetMouseEventExplanation(int keycode)
+        {
+            int button = Convert.ToInt32((keycode.ToString()).Substring(1, 1));
+            int mouseEvent = Convert.ToInt32((keycode.ToString()).Substring(2, 1));
+
+            return HotkeyInfo.GetMouseEventExplanation(button, mouseEvent);
         }
 
         //이제 컨트롤러는 우리가 어떤 프로필을 편집하는 지 알고 있다.
@@ -133,14 +171,11 @@ namespace AutoHotKey.UserInterfaces
             cbWindowToDo.IsChecked = false;
             cbShiftToDo.IsChecked = false;
 
-            xCbDeleteToDo.IsChecked = false;
-            xCbSpaceToDo.IsChecked = false;
-
             tbKeySet.Text = "";
             tbKeySetToDo.Text = "";
 
-            currentKeyIn = -1;
-            currentKeyOut = -1;
+            currentKeyIn = 0;
+            currentKeyOut = 0;
         }
 
 
@@ -157,8 +192,8 @@ namespace AutoHotKey.UserInterfaces
 
             HotkeyPair currentHotkey = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1);
             labelCurrentHotkey.Content = currentHotkey.Trigger.ToString();
-            labelCurrentToDo.Content = "Hotkey : ";
-            labelCurrentToDo.Content += currentHotkey.Action.ToString();
+            string[] temp = currentHotkey.Action.ToString().Split(' ');
+            labelCurrentToDo.Content = temp[0] + "\n" + temp[1];
 
             xTextBoxExplanation.Text = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1).Explanation;
 
@@ -199,25 +234,11 @@ namespace AutoHotKey.UserInterfaces
             else
             {
                 var checkBox = sender as CheckBox;
-                if (checkBox != null && (!ReferenceEquals(sender, xCbDeleteToDo) && !ReferenceEquals(sender, xCbSpaceToDo)) && checkBox.IsChecked.Value)
+                if (checkBox != null && checkBox.IsChecked.Value)
                 {
                     cbNoModToDo.IsChecked = false;
                 }
             }
-
-            if (ReferenceEquals(sender, xCbSpaceToDo) && xCbSpaceToDo.IsChecked.Value)
-            {
-                tbKeySetToDo.Text = "";
-                currentKeyOut = VK_SPACE;
-                xCbDeleteToDo.IsChecked = false;
-            }
-            else if (ReferenceEquals(sender, xCbDeleteToDo) && xCbDeleteToDo.IsChecked.Value)
-            {
-                tbKeySetToDo.Text = "";
-                currentKeyOut = VK_DELETE;
-                xCbSpaceToDo.IsChecked = false;
-            }
-
 
         }
 
@@ -248,43 +269,50 @@ namespace AutoHotKey.UserInterfaces
                 return;
             }
 
-            //출력에서는 아무것도 체크하지 않은 것은 부정한 것으로 판단.
-            if ((!cbNoModToDo.IsChecked.Value && !cbControlToDo.IsChecked.Value && !cbAltToDo.IsChecked.Value
-                && !cbWindowToDo.IsChecked.Value && !cbShiftToDo.IsChecked.Value))
+            if(currentKeyOut >= 0)
             {
-                MessageBox.Show("Invalid Output Setting");
-                return;
-            }
-
-            int count = 0;
-            //만약 키가 빈칸인 경우, NoMod만 체크되거나 여러가지 조합키가 선택되면 부정.
-            if ((String.IsNullOrEmpty(tbKeySetToDo.Text) || String.IsNullOrWhiteSpace(tbKeySetToDo.Text)) && !cbNoModToDo.IsChecked.Value)
-            {
-                if (cbAltToDo.IsChecked.Value) count++;
-                if (cbControlToDo.IsChecked.Value) count++;
-                if (cbShiftToDo.IsChecked.Value) count++;
-                if (cbWindowToDo.IsChecked.Value) count++;
-
-                if (count > 1)
+                //출력에서는 아무것도 체크하지 않은 것은 부정한 것으로 판단.
+                if ((!cbNoModToDo.IsChecked.Value && !cbControlToDo.IsChecked.Value && !cbAltToDo.IsChecked.Value
+                    && !cbWindowToDo.IsChecked.Value && !cbShiftToDo.IsChecked.Value))
                 {
                     MessageBox.Show("Invalid Output Setting");
                     return;
                 }
-                else if(currentKeyOut==-1)
+
+                int count = 0;
+                //만약 키가 빈칸인 경우, NoMod만 체크되거나 여러가지 조합키가 선택되면 부정.
+                if ((String.IsNullOrEmpty(tbKeySetToDo.Text) || String.IsNullOrWhiteSpace(tbKeySetToDo.Text)) && !cbNoModToDo.IsChecked.Value)
                 {
-                    currentKeyOut = 0;
+                    if (cbAltToDo.IsChecked.Value) count++;
+                    if (cbControlToDo.IsChecked.Value) count++;
+                    if (cbShiftToDo.IsChecked.Value) count++;
+                    if (cbWindowToDo.IsChecked.Value) count++;
+
+                    if (count > 1)
+                    {
+                        MessageBox.Show("Invalid Output Setting");
+                        return;
+                    }
                 }
             }
 
+
             //입력은 반드시 단일키
             int modIn = EModifiers.NoMod;
-
             int modOut = EModifiers.NoMod;
-            if (cbAltToDo.IsChecked.Value) modOut |= EModifiers.Alt;
-            if (cbControlToDo.IsChecked.Value) modOut |= EModifiers.Ctrl;
-            if (cbShiftToDo.IsChecked.Value) modOut |= EModifiers.Shift;
-            if (cbWindowToDo.IsChecked.Value) modOut |= EModifiers.Win;
 
+            if (currentKeyOut < 0)
+            {
+                modOut = Convert.ToInt32(currentKeyOut.ToString().Substring(2, 1));
+                currentKeyOut = Convert.ToInt32(currentKeyOut.ToString().Substring(1, 1));
+            }
+            else
+            {
+                if (cbAltToDo.IsChecked.Value) modOut |= EModifiers.Alt;
+                if (cbControlToDo.IsChecked.Value) modOut |= EModifiers.Ctrl;
+                if (cbShiftToDo.IsChecked.Value) modOut |= EModifiers.Shift;
+                if (cbWindowToDo.IsChecked.Value) modOut |= EModifiers.Win;
+            }
 
             HotkeyPair hotkey;
 
@@ -331,9 +359,6 @@ namespace AutoHotKey.UserInterfaces
         {
             ((TextBox)sender).Text = e.Key.ToString();
 
-            //TODO : 정식버전에서는 이거 지우기.
-            MessageBox.Show(KeyInterop.VirtualKeyFromKey(e.Key).ToString());
-
             //tbKeySet.Text = e.Key.ToString();
             if (ReferenceEquals(sender, tbKeySet))
             {
@@ -342,8 +367,8 @@ namespace AutoHotKey.UserInterfaces
             else if (ReferenceEquals(sender, tbKeySetToDo))
             {
                 currentKeyOut = int.Parse(KeyInterop.VirtualKeyFromKey(e.Key).ToString());
-                xCbSpaceToDo.IsChecked = false;
-                xCbDeleteToDo.IsChecked = false;
+                xStackModifierSetter.Visibility = Visibility.Visible;
+                xLabelNoModifier.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -375,6 +400,22 @@ namespace AutoHotKey.UserInterfaces
                 buttonText += (info.Explanation);
                 hotkeyListBtn.ElementAt(mCurrentHotkeySelected - 1).Content = buttonText;
                 hotkeyListBtn.ElementAt(mCurrentHotkeySelected - 1).FontSize = 15;
+            }
+        }
+
+        private void OnBtnOtherKeys_Click(object sender, RoutedEventArgs e)
+        {
+            if (!mIsSelectingSpecialKey)
+            {
+                SpecialKeySelection specialKeySelection = new SpecialKeySelection(this);
+
+                mWindowsToClose.Add(specialKeySelection);
+                specialKeySelection.Show();
+                mIsSelectingSpecialKey = true;
+            }
+            else
+            {
+                MessageBox.Show("Already selecting special keys");
             }
         }
     }

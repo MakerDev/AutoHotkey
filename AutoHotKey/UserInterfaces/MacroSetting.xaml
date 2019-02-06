@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AutoHotKey.UserInterfaces"
         mc:Ignorable="d"
+        ResizeMode="NoResize"
         Title="MacroSetting" Height="480" Width="670">
     <Grid>
 
@@ -41,9 +42,10 @@
 
             <Label x:Name="labelCurrentToDo"
                 Content="Currnet Setting : "
-                HorizontalAlignment ="Left"
+                HorizontalAlignment ="Center"
+                HorizontalContentAlignment="Center"
                 FontSize="18"
-                Margin="10,60,51,0" BorderThickness="0,0,0,0" FontWeight="Bold"/>
+                Margin="10,60,0,0" BorderThickness="0,0,0,0" FontWeight="Bold" Width="304"/>
 
 
 
@@ -105,14 +107,25 @@
                 Margin="0, 20, 0, 0">
 
                 <TextBox 
-                Text=" Combination Out"
-                IsReadOnly="True"
-                FontSize="18"
-                Margin="0, 30, 0, 0" BorderThickness="0,0,0,1"
+                    Text=" Combination Out"
+                    IsReadOnly="True"
+                    FontSize="18"
+                    Margin="0, 30, 0, 0" BorderThickness="0,0,0,1"
                 />
 
+                <Label
+                    Name="xLabelNoModifier"
+                    Content="No modifier with Mouse Events"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    FontSize="16"
+                    Visibility="Collapsed"
+                    />
+
                 <StackPanel 
+                    Name="xStackModifierSetter"
                     Orientation="Horizontal"
+                    Visibility="Visible"
                     Margin="0, 8, 0, 0"
                     >
                     <CheckBox x:Name="cbNoModToDo" Content="NoMod"
@@ -158,21 +171,19 @@
                         KeyDown = "OnKeyInput"
                         />
 
-                    <CheckBox x:Name="xCbDeleteToDo" Content="Delete"
-                              Margin="10, 0 , 0,0"
-                              Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged" 
-                              Height="15"/>
-                    <CheckBox x:Name="xCbSpaceToDo" Content="Space"
-                              Margin="10, 0 , 0,0"
-                              Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged" 
-                              Height="15"/>
+                    <Button x:Name="xBtnOtherKeys" 
+                        Height="25" 
+                        Margin="80,0,0,0" Click="OnBtnOtherKeys_Click">
+                        Other Keys
+                    </Button>
+
                 </StackPanel>
             </StackPanel>
 
             <Button
                 Name="btnOk"
                 Content="Ok"
-                Margin="0, 15, 0 ,0"
+                Margin="0, 40, 0 ,0"
                 Width="100"
                 Height="30" Click="OnOkClicked"
                 />

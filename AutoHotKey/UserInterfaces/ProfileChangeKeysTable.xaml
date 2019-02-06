@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:AutoHotKey.UserInterfaces"
         mc:Ignorable="d"
         SizeToContent="WidthAndHeight"
-        Title="ProfileChangeKeysTable" Height="500" Width="650">
+        Title="" Height="500" Width="650">
     <Grid Margin="0,0,0,15">
         <StackPanel 
             HorizontalAlignment="Center"

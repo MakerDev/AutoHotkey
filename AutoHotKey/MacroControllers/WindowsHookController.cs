@@ -9,9 +9,16 @@ using System.Windows.Interop;
 
 namespace AutoHotKey.MacroControllers
 {
+    public enum EMouseEvents
+    {
+        Click = 0,
+        DoubleClick,
+        Down
+    }
+
+
     //일반적인 핫키의 경우 RegisterHotkey로 구현한다. 예컨대 x=Control + Z같은 것
     //하지만 Z=Shift 같은 특수 매핑키는 윈도우 훅으로 구현한다.
-
     //훅 이벤트 발생히 이벤트로 넘겨줄 인자.
     public class KeyEventArgs
     {
@@ -40,6 +47,22 @@ namespace AutoHotKey.MacroControllers
             this.isUp = isUp;
         }
     }
+
+    //핫키 이벤트 발생히 이벤트로 넘겨줄 인자.
+    public class MouseEventArgs
+    {
+        public int Button { get; private set; } //어느 버튼인지
+        public EMouseEvents MouseEvent { get; private set; } //만약 KeyUp이면 True, Down이면 false
+        public bool IsUp { get; private set; } //Down이벤트인지 UP이벤트인지
+
+        public MouseEventArgs(int button, EMouseEvents mouseEvent, bool isUp)
+        {
+            this.Button = button;
+            this.MouseEvent = mouseEvent;
+            this.IsUp = isUp;
+        }
+    }
+
 
     //Static 클래스로 구성?
     class WindowsHookController
@@ -157,6 +180,7 @@ namespace AutoHotKey.MacroControllers
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
                 }
 
+                #region 연쇄 작용 방지
                 if (mLastHotkeyDown != null)
                 {
                     if (mLastHotkeyDown.Key == vkCode)
@@ -182,12 +206,11 @@ namespace AutoHotKey.MacroControllers
                         }
                     }
                 }
+                #endregion
 
-
-
-
-                //이미 한번 눌러졌으면 이벤트 발생X, 그냥 입력 무시 단, z=shift같은 특수키에만 해당.
-                if (mIsPressedAlready[vkCode] && mKeyEventPairs[vkCode].Key==0)
+                //이미 한번 눌러졌으면 이벤트 발생X, 그냥 입력 무시 단, z=shift와 마우스 이벤트 같은 특수키에만 해당
+                //0은 shift 같은 키가 출력인 애들이고 1, 2, 4,는 마우스 이므로 0이상 4이하로 설정
+                if (mIsPressedAlready[vkCode] && (mKeyEventPairs[vkCode].Key >= 0 && mKeyEventPairs[vkCode].Key <= 4))
                 {
                     return new IntPtr(5);
                 }
@@ -196,8 +219,17 @@ namespace AutoHotKey.MacroControllers
                 if (OnKeyEvent != null)
                 {
                     mLastHotkeyDown = new HotkeyInfo(mKeyEventPairs[vkCode].Key, mKeyEventPairs[vkCode].Modifier);
+
+                    if (mLastHotkeyDown.Key >= 1 && mLastHotkeyDown.Key <= 4)
+                    {
+                        //여기서 modifier는 반드시 0, 1, 2여야 한다.
+                        OnMouseEventHookOccur(new MouseEventArgs(mLastHotkeyDown.Key, (EMouseEvents)mLastHotkeyDown.Modifier, false));
+                    }
+                    else
+                    {
+                        OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], false));
+                    }
                     Debug.WriteLine("현재 아웃풋" + mLastHotkeyDown.ToString());
-                    OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], false));
                 }
 
                 //Shift같은 특수키의 keydown이벤트가 여러변 입력되는 걸 막기 위함.
@@ -232,7 +264,7 @@ namespace AutoHotKey.MacroControllers
                     }
                     else
                     {
-                        if(mLastHotkeyUp.Key == -1 || mLastHotkeyUp.Modifier == -1)
+                        if (mLastHotkeyUp.Key == -1 || mLastHotkeyUp.Modifier == -1)
                         {
                             mLastHotkeyUp = null;
 
@@ -241,17 +273,22 @@ namespace AutoHotKey.MacroControllers
                     }
                 }
 
-
-                //만약 f=ctrl + z로 설정하면 f, ctrl과 z에서 각각 keyup 이벤트가 발생하여 keyup이벤트가 세 번 발생한다.
-                //
                 if (OnKeyEvent != null)
                 {
                     //기존데이터의 변질을 막기 위해.
                     mLastHotkeyUp = new HotkeyInfo(mKeyEventPairs[vkCode].Key, mKeyEventPairs[vkCode].Modifier);
 
-                    OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], true));
+                    if (mLastHotkeyUp.Key >= 1 && mLastHotkeyUp.Key <= 4)
+                    {
+                        //여기서 modifier는 반드시 0, 1, 2여야 한다.
+                        OnMouseEventHookOccur(new MouseEventArgs(mLastHotkeyUp.Key, (EMouseEvents)mLastHotkeyUp.Modifier, true));
+                    }
+                    else
+                    {
+                        OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], true));
+                    }
+
                     Debug.WriteLine("업 이벤트 발생" + vkCode.ToString());
-                    //mLastOut = null;    //키를 땔 때는 최근 아웃풋을 초기화함.
                 }
 
                 mIsPressedAlready[vkCode] = false;
@@ -261,6 +298,76 @@ namespace AutoHotKey.MacroControllers
             }
 
             return CallNextHookEx(mHookID, nCode, wParam, lParam);
+
+        }
+
+        private void OnMouseEventHookOccur(MouseEventArgs e)
+        {
+            if (e.IsUp)
+            {
+                //Down으로 설정되지 않는 것들은 up이벤트에 반응할 필요가 없다.
+                if (e.MouseEvent != EMouseEvents.Down)
+                    return;
+
+                WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
+
+                switch (e.Button)
+                {
+                    //Left
+                    case 1:
+                        inputSimulator.Mouse.LeftButtonUp();
+                        break;
+
+                    //Right
+                    case 2:
+                        inputSimulator.Mouse.RightButtonUp();
+                        break;
+
+                    //Middle
+                    case 4:
+                        inputSimulator.Mouse.MiddleButtonUp();
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
+                EMouseEvents mouseEvent = e.MouseEvent;
+                switch (e.MouseEvent)
+                {
+                    //Left
+                    case EMouseEvents.Click:
+                        if (e.Button == 1) { inputSimulator.Mouse.LeftButtonClick(); }
+                        if (e.Button == 2) { inputSimulator.Mouse.RightButtonClick(); }
+                        if (e.Button == 4) { inputSimulator.Mouse.MiddleButtonClick(); }
+
+                        break;
+
+                    //Right
+                    case EMouseEvents.DoubleClick:
+                        if (e.Button == 1) { inputSimulator.Mouse.LeftButtonDoubleClick(); }
+                        if (e.Button == 2) { inputSimulator.Mouse.RightButtonDoubleClick(); }
+                        if (e.Button == 4) { inputSimulator.Mouse.MiddleButtonDoubleClick(); }
+
+                        break;
+
+                    //Middle
+                    case EMouseEvents.Down:
+                        if (e.Button == 1) { inputSimulator.Mouse.LeftButtonDown(); }
+                        if (e.Button == 2) { inputSimulator.Mouse.RightButtonDown(); }
+                        if (e.Button == 4) { inputSimulator.Mouse.MiddleButtonDown(); }
+
+                        break;
+
+                    default:
+                        break;
+                }
+
+            }
+
 
         }
 

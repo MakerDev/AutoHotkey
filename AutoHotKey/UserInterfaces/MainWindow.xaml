@@ -13,9 +13,17 @@
     <Grid>
         <StackPanel>
             <Menu IsMainMenu="True" VerticalContentAlignment="Center" >
+                <MenuItem
+                    Margin="8, 0, 0, 0"
+                    Header="Options">
+                    <MenuItem Header="_Set Options" Click="OnBtnSettingOptionsClicked"/>
+                    <Separator/>
+
+                    <MenuItem Header="_Exit"  Click="OnExitBtnClicked"/>
+                </MenuItem>
                 <MenuItem                   
                     Margin="8,0,0,0"
-                    Header="_Options">
+                    Header="_Setting">
                     <MenuItem                          
                         Tag="-1"
                         Header="_Set Deactivating Key"
@@ -25,8 +33,6 @@
                         Header="_Set All Profile Changing Key" 
                         Click="OnBtnSetProfileChangeKeyClicked" 
                         />
-                    <Separator/>
-                    <MenuItem Header="_Exit"  Click="OnExitBtnClicked"/>
                 </MenuItem>
                 <MenuItem
                     Margin="8, 0, 0, 0"
@@ -40,12 +46,13 @@
             Name="scrViewerProfiles"
             HorizontalAlignment="Left" 
             Height="412" 
+            HorizontalContentAlignment="Left"
             VerticalAlignment="Top" 
             Width="330" Margin="0,19,0,0"           
             />
         <StackPanel
               Visibility="Visible"
-              HorizontalAlignment="Left" 
+              HorizontalAlignment="Left"              
               Height="431" Margin="330,0,0,0" 
               VerticalAlignment="Top" 
               Width="324"
@@ -57,14 +64,6 @@
                      FontSize="25"
                      Margin="0, 55, 0, 0" BorderThickness="0,3,0,0" FontWeight="Bold"/>
 
-
-            <Button Name="xBtnSetProfileChangeKey"
-                    Visibility="Hidden"
-                    Content="프로필 변경 키 설정"
-                    Width="250" Height="35"
-                    Margin="0, 10, 0, 0"
-                    FontSize="20" Click="OnBtnSetProfileChangeKeyClicked"
-                    />
 
             <Button Name="btnEditProfile"
                     Content="Edit Profile" 

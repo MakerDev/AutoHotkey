@@ -13,12 +13,31 @@
             Margin="0,19,0,60"
             Width="720">
             <StackPanel      
+                Name="xStackGeneralKeys"
                 Visibility="Collapsed"
                 Orientation="Vertical" Width="180">
                 <Label 
                     HorizontalAlignment="Center"
                     FontSize="18"
+                    Margin="0, 0, 0, 30"
                     Content="General Keys" />
+
+                <CheckBox
+                    Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
+                    Tag="32"
+                    Margin="15, 0, 0, 10"
+                    Content="  Space"/>
+                <CheckBox
+                    Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
+                    Tag="8"
+                    Margin="15, 0, 0, 10"
+                    Content="  BackSpace" />
+                <CheckBox
+                    Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
+                    Tag="46"
+                    Margin="15, 0, 0, 0"
+                    Content="  Delete"/>
+
             </StackPanel>
             
             <Label Background="#FFA8A3A3" Width="1" />
@@ -48,32 +67,6 @@
 
             </StackPanel>
 
-            <Label Background="#FFA8A3A3" Width="1" />
-
-            <StackPanel
-                Orientation="Vertical" Width="180">
-                <Label 
-                    HorizontalAlignment="Center"
-                    FontSize="18"
-                    Margin="0, 0, 0, 30"
-                    Content="Mouse Keys" />
-                <CheckBox
-                    Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
-                    Tag="3"
-                    Margin="15, 0, 0, 10"
-                    Content="  Middle Button"/>
-                <CheckBox
-                    Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
-                    Tag="1"
-                    Margin="15, 0, 0, 10"
-                    Content="  Left Button"/>
-                <CheckBox
-                    Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
-                    Tag="2"
-                    Margin="15, 0, 0, 0"
-                    Content="  Right Button"/>
-
-            </StackPanel>
             <Label Background="#FFA8A3A3" Width="1" />
 
             <StackPanel
@@ -119,6 +112,54 @@
                     Tag="172"
                     Margin="15, 0, 0, 0"
                     Content="  Browser Home"/>
+            </StackPanel>
+            <Label Background="#FFA8A3A3" Width="1" />
+
+
+            <StackPanel
+                Orientation="Vertical" Width="180">
+                <Label 
+                    HorizontalAlignment="Center"
+                    FontSize="18"
+                    Margin="0, 0, 0, 30"
+                    Content="Mouse Keys" />
+                <CheckBox
+                    Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
+                    Tag="4"
+                    Margin="15, 0, 0, 10"
+                    Content="  Middle Button"/>
+                <CheckBox
+                    Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
+                    Tag="1"
+                    Margin="15, 0, 0, 10"
+                    Content="  Left Button"/>
+                <CheckBox
+                    Checked="OnCheckBoxChecked" Unchecked="OnCheckBoxUnChecked"
+                    Tag="2"
+                    Margin="15, 0, 0, 40"
+                    Content="  Right Button"/>
+
+                <StackPanel
+                    Name="xStackMouseOptions"
+                    Visibility="Hidden"
+                    >
+                    <RadioButton 
+                        Tag="0"
+                        IsChecked="True"
+                        Margin="25, 0, 0, 5"
+                        Checked="OnMouseOptionChanged"
+                        Content="Click" />
+                    <RadioButton 
+                        Tag="1"
+                        Margin="25, 0, 0, 5"
+                        Checked="OnMouseOptionChanged"
+                        Content="Double Click" />
+                    <RadioButton 
+                        Tag="2"
+                        Margin="25, 0, 0, 0"
+                        Checked="OnMouseOptionChanged"
+                        Content="Down" />
+                </StackPanel>
             </StackPanel>
 
         </StackPanel>

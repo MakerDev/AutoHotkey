@@ -217,6 +217,8 @@ namespace AutoHotKey.UserInterfaces
         {
             HotKeyController.Instance.SaveProfileChangeKeys();
             MessageBox.Show("Saved");
+
+            this.Close();
         }
     }
 }

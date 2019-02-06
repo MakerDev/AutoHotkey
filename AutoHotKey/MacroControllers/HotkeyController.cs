@@ -495,8 +495,6 @@ namespace AutoHotKey.MacroControllers
                 int keyToDo = hotkey.Action.Key;
 
 
-                //만약 스페셜키이면
-                //TODO : 스페이스 땜빵한 거 수정. 단일 키로 실행되는 핫 키는 다 이리로 옮기기
                 if (mod == 0)
                 {
                     Debug.WriteLine("스페셜키 : " + vk.ToString());
@@ -516,15 +514,9 @@ namespace AutoHotKey.MacroControllers
             mIsHotkeyRegisterd = true;
 
             mHookController.HookKeyboard();
-            //RegisterProfileChangingHotkeyInternal();
-
-            //mIsHotkeyRegistered = true;
-
-            //MessageBox.Show(profileNum.ToString() + "번 프로필 동작 시작");
         }
 
         //TODO : 나중에 후킹 및 핫 키 등록 등의 윈도우 메시지 관련 함수들을 따로 클래스를 만들어 정리하는 것을 고려한다.
-        //TODO : 나중에 F1키들 말고 자유설정으로 바꿀 수 있게 해주기. + 체인지키 목록을 관리하며 핫 키와 중복없도록 하기.
         //반드시 프로필이 등록되었을 때만 사용될 수 있다.
         private void RegisterProfileChangingHotkeyInternal()
         {
@@ -621,13 +613,14 @@ namespace AutoHotKey.MacroControllers
             return IntPtr.Zero;
         }
 
-        //핫 키 이벤트 발생처리기
+        //조합키 이벤트 발생처리기
         private void OnHotkeyEvent(object sender, HotKeyEventArgs hotKeyEventArgs)
         {
 
         }
 
         //스페셜키와 단일 키 이벤트 처리기
+        //TODO : 이 콜백이벤트를 그냥 hookControlller로 이동하는 것도 고려
         private void OnSpecialKeyEvent(object sender, KeyEventArgs keyEventArgs)
         {
             int todoMod = keyEventArgs.eventinfo.Modifier;
@@ -670,7 +663,6 @@ namespace AutoHotKey.MacroControllers
                 {
                     inputSimulator.Keyboard.KeyUp(todoKeyVirtualKey);
                 }
-
                 if (modifiers.Count != 0)
                 {
                     foreach (var todoModifier in modifiers)
@@ -678,8 +670,6 @@ namespace AutoHotKey.MacroControllers
                         inputSimulator.Keyboard.KeyUp(todoModifier);
                     }
                 }
-
-
             }
         }
 
@@ -712,12 +702,10 @@ namespace AutoHotKey.MacroControllers
                     RegisterProfileChangingHotkeyInternal();
                     ChangeActiveProfileInternal(-1);
                 }
-                //MessageBox.Show("매크로 동작 중지");
 
                 return;
             }
 
-            //TODO : 체인지키 변경 가능하게 하면 바꾸기
             for (int i = 0; i < mProfiles.Count; i++)
             {
                 if (trigger.Key == mProfileChangeKeyContainer.GetProfileChangeKeyFromIndex(mProfileActive - 1, i))

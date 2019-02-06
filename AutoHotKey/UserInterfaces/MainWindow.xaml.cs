@@ -34,8 +34,9 @@ namespace AutoHotKey
         private List<Window> mWindowsToClose = new List<Window>();
 
         private InformationWindow mInfoWindow = null;
+        private OptionWindow mOptionWindow = null;
+        private bool mIsEditingOptions = false;
         //private MacroSetting macroSettingWindow = null;
-        private MacroSettingWithPicture mSettingWindow = null;
         
 
         //TODO : 현재 창에서 연 다른 창들은 현재 창이 꺼지면 함께 꺼지도록 한다.
@@ -69,12 +70,17 @@ namespace AutoHotKey
 
             ni.ContextMenu = contextMenu;
 
+            //infoWindow의 옵션설정을 위해 먼저 생성되어야함
+            mOptionWindow = new OptionWindow(this);
+            mWindowsToClose.Add(mOptionWindow);
+
             mInfoWindow = new InformationWindow();
             mInfoWindow.ChangeCurrentProfile(-1);
 
             mWindowsToClose.Add(mInfoWindow);
 
             mInfoWindow.Show();
+
         }
 
         private void OnBtnHelpClicked(object sender, RoutedEventArgs e)
@@ -102,6 +108,8 @@ namespace AutoHotKey
         {
             if (WindowState == WindowState.Minimized)
                 this.Hide();
+            else if (WindowState == WindowState.Normal)
+                this.Activate();
 
             base.OnStateChanged(e);
         }
@@ -121,7 +129,12 @@ namespace AutoHotKey
 
             foreach(var window in mWindowsToClose)
             {
-                window.Close();
+                //후속 윈도우를 먼저 끌 수도 있으니 null체크를 반드시 해야함.
+                if(window != null)
+                {
+                    window.Close();
+                }
+
             }
         }
 
@@ -131,9 +144,11 @@ namespace AutoHotKey
             HotKeyController.Instance.RegisterHelper(this);
             HotKeyController.Instance.ProfileChanged += OnActiveProfileChanged;
 
-
-            this.WindowState = WindowState.Minimized;
-            Hide();
+            if(OptionWindow.Options.IsMinimizeMainWindowOnStart)
+            {
+                this.WindowState = WindowState.Minimized;
+                Hide();
+            }
         }
 
         // : 만약 프로필 순서 바꾸는 기능을 추가하려면 구현은 파일이름을 바꾸고 다시 로딩하는 걸로 구현하면 됨 
@@ -231,12 +246,20 @@ namespace AutoHotKey
                 return;
             }
 
+            if(OptionWindow.Options.WhichSettingWindow ==0)
+            {
+                Window mSettingWindow = new MacroSettingWithPicture(currentProfile);
 
-            //TODO : 추후에 메인 윈도우 먼저 못 끄게 하기
-            mSettingWindow = new MacroSettingWithPicture(currentProfile);
+                mWindowsToClose.Add(mSettingWindow);
+                mSettingWindow.Show();
+            }
+            else if(OptionWindow.Options.WhichSettingWindow == 1)
+            {
+                Window mSettingWindow = new MacroSetting(currentProfile);
 
-            mWindowsToClose.Add(mSettingWindow);
-            mSettingWindow.Show();
+                mWindowsToClose.Add(mSettingWindow);
+                mSettingWindow.Show();
+            }
         }
 
         private void OnDeleteProfileClicked(object sender, RoutedEventArgs e)
@@ -282,5 +305,23 @@ namespace AutoHotKey
             profileChangeKeysTable.Show();
         }
 
+        private void OnBtnSettingOptionsClicked(object sender, RoutedEventArgs e)
+        {
+            if (!mIsEditingOptions)
+            {
+                mIsEditingOptions = true;
+                mOptionWindow = new OptionWindow(this);
+                mOptionWindow.Show();
+            }
+            else
+            {
+                MessageBox.Show("You're already editing options!");
+            }
+        }
+
+        public void OnOptionWindowCloseing()
+        {
+            mIsEditingOptions = false;
+        }
     }
 }
