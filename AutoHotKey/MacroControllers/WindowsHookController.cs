@@ -218,18 +218,22 @@ namespace AutoHotKey.MacroControllers
                 //처음 발동 될 때 가장 최근 아웃풋을 설정해놈.
                 if (OnKeyEvent != null)
                 {
-                    mLastHotkeyDown = new HotkeyInfo(mKeyEventPairs[vkCode].Key, mKeyEventPairs[vkCode].Modifier);
 
-                    if (mLastHotkeyDown.Key >= 1 && mLastHotkeyDown.Key <= 4)
+                    int key = mKeyEventPairs[vkCode].Key;
+                    int mod = mKeyEventPairs[vkCode].Modifier;
+
+                    if (key >= 1 && key <= 4)
                     {
                         //여기서 modifier는 반드시 0, 1, 2여야 한다.
-                        OnMouseEventHookOccur(new MouseEventArgs(mLastHotkeyDown.Key, (EMouseEvents)mLastHotkeyDown.Modifier, false));
+                        OnMouseEventHookOccur(new MouseEventArgs(key, (EMouseEvents)mod, false));
                     }
                     else
                     {
+                        mLastHotkeyDown = new HotkeyInfo(key, mod);
+
+
                         OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], false));
                     }
-                    Debug.WriteLine("현재 아웃풋" + mLastHotkeyDown.ToString());
                 }
 
                 //Shift같은 특수키의 keydown이벤트가 여러변 입력되는 걸 막기 위함.
@@ -247,8 +251,7 @@ namespace AutoHotKey.MacroControllers
                 if (!mKeyEventPairs.ContainsKey(vkCode))
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
 
-                //4이하는 마우스이벤트 인데, 출력은 마우스가 가능하지만 입력은 마우스일 수 없기 때문에
-                if (mLastHotkeyUp != null )
+                if (mLastHotkeyUp != null)
                 {
                     if (mLastHotkeyUp.Key == vkCode)
                     {
@@ -276,20 +279,22 @@ namespace AutoHotKey.MacroControllers
 
                 if (OnKeyEvent != null)
                 {
-                    //기존데이터의 변질을 막기 위해.
-                    mLastHotkeyUp = new HotkeyInfo(mKeyEventPairs[vkCode].Key, mKeyEventPairs[vkCode].Modifier);
+                    int key = mKeyEventPairs[vkCode].Key;
+                    int mod = mKeyEventPairs[vkCode].Modifier;
 
-                    if (mLastHotkeyUp.Key >= 1 && mLastHotkeyUp.Key <= 4)
+                    //마우스는 입력으로 사용되지 않으므로 연쇄에 대한 걱정을 할 필요가 없다
+                    if (key >= 1 && key <= 4)
                     {
                         //여기서 modifier는 반드시 0, 1, 2여야 한다.
-                        OnMouseEventHookOccur(new MouseEventArgs(mLastHotkeyUp.Key, (EMouseEvents)mLastHotkeyUp.Modifier, true));
+                        OnMouseEventHookOccur(new MouseEventArgs(key, (EMouseEvents)mod, true));
                     }
                     else
                     {
+                        //기존데이터의 변질을 막기 위해.
+                        mLastHotkeyUp = new HotkeyInfo(key, mod);
+
                         OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], true));
                     }
-
-                    Debug.WriteLine("업 이벤트 발생" + vkCode.ToString());
                 }
 
                 mIsPressedAlready[vkCode] = false;

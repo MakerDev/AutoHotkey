@@ -277,7 +277,7 @@
                 Margin="138,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="45" Height="28" 
-                Tag="f2"
+                Tag="F2"
                 Click="OnKeyClicked"
             />
             <Button x:Name="xBtn114" 
@@ -286,7 +286,7 @@
                 Margin="193,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="45" Height="28" 
-                Tag="f3"
+                Tag="F3"
                 Click="OnKeyClicked"
                 />
             <Button x:Name="xBtn115" 
@@ -295,7 +295,7 @@
                 Margin="248,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="45" Height="28" 
-                Tag="f4"
+                Tag="F4"
                 Click="OnKeyClicked"
                 />
             <Button x:Name="xBtn116" 
@@ -304,7 +304,7 @@
                 Margin="302,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="46" Height="28" 
-                Tag="f5"
+                Tag="F5"
                 Click="OnKeyClicked"
                 />
             <Button x:Name="xBtn117" 
@@ -313,7 +313,7 @@
                 Margin="357,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="45" Height="28" 
-                Tag="f6"
+                Tag="F6"
                 Click="OnKeyClicked"
                 />
             <Button x:Name="xBtn118" 
@@ -322,7 +322,7 @@
                 Margin="412,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="45" Height="28" 
-                Tag="f7"
+                Tag="F7"
                 Click="OnKeyClicked"
                 />
             <Button x:Name="xBtn119" 
@@ -331,7 +331,7 @@
                 Margin="467,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="45" Height="29" 
-                Tag="f8"
+                Tag="F8"
                 Click="OnKeyClicked"
                 />
             <Button x:Name="xBtn120" 
@@ -340,7 +340,7 @@
                 Margin="521,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="46" Height="29" 
-                Tag="f9"
+                Tag="F9"
                 Click="OnKeyClicked"
                 />
             <Button x:Name="xBtn121" 
@@ -349,7 +349,7 @@
                 Margin="576,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="45" Height="28" 
-                Tag="f10"
+                Tag="F10"
                 Click="OnKeyClicked"
                 />
             <Button x:Name="xBtn122" 
@@ -519,7 +519,7 @@
                 Margin="894,96,0,0" 
                 VerticalAlignment="Top" 
                 Width="45" Height="28" 
-                Tag="0x13"
+                Tag="PAUSE"
                 Click="OnKeyClicked"
             />
             <Button x:Name="xBtn144" 
@@ -629,7 +629,7 @@
                 VerticalAlignment="Top" 
                 VerticalContentAlignment="Center"
                 Width="45" Height="45" 
-                Tag="87"
+                Tag="W"
                 Click="OnKeyClicked" Content="3"
             />
             <Button x:Name="xBtn69" 

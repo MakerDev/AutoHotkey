@@ -460,6 +460,7 @@ namespace AutoHotKey.MacroControllers
         }
 
         //프로필에 있는 핫 키를 윈도우에 등록한다. 참고로 이건 클래스이지 윈도우가 아니므로 기존의 this를 대체할 뭔가가 필요함.
+        //TODO : 프로필 체인지 키와 일반키/조합키 모두 훅 컨트롤러로 보내 전체를 대상으로 연쇄를 관리하게 바꾼다.
         private void RegisterHotkeyInternal(int profileNum)
         {
             RegisterProfileChangingHotkeyInternal();
@@ -469,10 +470,6 @@ namespace AutoHotKey.MacroControllers
 
 
             var helper = new WindowInteropHelper(mHelper);
-
-            //훅 등록은 체인지키 할당할 때 함.
-            //_source = HwndSource.FromHwnd(helper.Handle);
-            //_source.AddHook(HwndHook);
 
             //프로필 등록과 동시에
 
@@ -501,14 +498,12 @@ namespace AutoHotKey.MacroControllers
                     HotkeyInfo info = new HotkeyInfo(hotkey.Action.Key, hotkey.Action.Modifier);
                     mHookController.AddNewKey((int)vk, info);
                 }
-                else if (!RegisterHotKey(helper.Handle, HOTKEY_ID, mod, vk))
+                else if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0x11, 65))
                 {
                     // handle error
                     MessageBox.Show("Couldn't Register hotkey : " + vk.ToString() + "  " + mod.ToString());
                     return;
                 }
-
-
             }
 
             mIsHotkeyRegisterd = true;
