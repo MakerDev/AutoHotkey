@@ -97,9 +97,9 @@ namespace AutoHotKey.MacroControllers
             if (button == 2) { explanation = "RightMouseButton"; }
             if (button == 4) { explanation = "MiddleMouseButton"; }
 
-            if (mouseEvent == 0) { explanation += " Click"; }
-            if (mouseEvent == 1) { explanation += " Double Click"; }
-            if (mouseEvent == 2) { explanation += " Down"; }
+            if (mouseEvent == 0) { explanation += "\nClick"; }
+            if (mouseEvent == 1) { explanation += "\nDouble Click"; }
+            if (mouseEvent == 2) { explanation += "\nDown"; }
 
             return explanation;
         }

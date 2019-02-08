@@ -247,7 +247,8 @@ namespace AutoHotKey.MacroControllers
                 if (!mKeyEventPairs.ContainsKey(vkCode))
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
 
-                if (mLastHotkeyUp != null)
+                //4이하는 마우스이벤트 인데, 출력은 마우스가 가능하지만 입력은 마우스일 수 없기 때문에
+                if (mLastHotkeyUp != null )
                 {
                     if (mLastHotkeyUp.Key == vkCode)
                     {

@@ -227,8 +227,7 @@ namespace AutoHotKey.UserInterfaces
                 HotkeyPair currentHotkey = mHotkeyList[indexOfHotkey];
                 labelCurrentHotkey.Content = tempCurrentButton.Tag.ToString();
 
-                string[] temp = currentHotkey.Action.ToString().Split(' ');
-                labelCurrentToDo.Content = temp[0] + "\n" + temp[1];
+                labelCurrentToDo.Text = currentHotkey.Action.ToString();
 
                 xTextBoxExplanation.Text = HotKeyController.Instance.GetHotKeyFromIndex(indexOfHotkey).Explanation;
 

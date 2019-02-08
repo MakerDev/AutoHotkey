@@ -40,8 +40,9 @@
                      FontSize="25"
                      Margin="0, 30, 0, 0" BorderThickness="0,3,0,0" FontWeight="Bold"/>
 
-            <Label x:Name="labelCurrentToDo"
-                Content="Currnet Setting : "
+            <TextBox x:Name="labelCurrentToDo"
+                Text="Currnet Setting : "
+                IsReadOnly="True"
                 HorizontalAlignment ="Center"
                 HorizontalContentAlignment="Center"
                 FontSize="18"

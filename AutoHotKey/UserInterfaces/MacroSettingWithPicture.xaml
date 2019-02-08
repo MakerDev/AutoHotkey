@@ -80,13 +80,14 @@
                      FontSize="36"
                      Margin="0, 30, 0, 0" BorderThickness="0,3,0,0" FontWeight="Bold"/>
 
-            <Label x:Name="labelCurrentToDo"
-                Content="Currnet Setting : "
+            <TextBox x:Name="labelCurrentToDo"
+                Text="Currnet Setting : "
                 HorizontalAlignment ="Center"    
                 HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
                 FontSize="18"       
                 Width="320"
-                Margin="0,100,0,0" BorderThickness="0,0,0,0" FontWeight="Bold" />
+                Margin="0,100,0,0" BorderThickness="0,0,0,0" FontWeight="Bold" IsReadOnly="True" />
             <TextBox 
                 x:Name="xTextBoxExplanation"
                 BorderThickness="1,2,2,2"
@@ -123,7 +124,7 @@
                     HorizontalAlignment="Center"                    
                     FontSize="24"
                     Width="131"
-                    Margin="104,5,118,0" RenderTransformOrigin="0.098,0.558"
+                    Margin="104,5,118,0"
                     />
                 <StackPanel 
                     Orientation="Horizontal"

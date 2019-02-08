@@ -192,8 +192,7 @@ namespace AutoHotKey.UserInterfaces
 
             HotkeyPair currentHotkey = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1);
             labelCurrentHotkey.Content = currentHotkey.Trigger.ToString();
-            string[] temp = currentHotkey.Action.ToString().Split(' ');
-            labelCurrentToDo.Content = temp[0] + "\n" + temp[1];
+            labelCurrentToDo.Text = currentHotkey.Action.ToString();
 
             xTextBoxExplanation.Text = HotKeyController.Instance.GetHotKeyFromIndex(mCurrentHotkeySelected - 1).Explanation;
 
