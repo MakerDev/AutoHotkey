@@ -92,10 +92,12 @@ namespace AutoHotKey.MacroControllers
             mHookController = new WindowsHookController(window);
 
             mHookController.OnKeyEvent += OnSpecialKeyEvent;
+            mHookController.OnSwitchEvent += OnSwitchingKeyEvent;
 
             mHelper = window;
 
             RegisterProfileChangingHotkeyInternal();
+
             //스타트 프로필은 없다.
             //RegisterHotkeyInternal(START_PROFILE);
         }
@@ -461,6 +463,7 @@ namespace AutoHotKey.MacroControllers
 
         //프로필에 있는 핫 키를 윈도우에 등록한다. 참고로 이건 클래스이지 윈도우가 아니므로 기존의 this를 대체할 뭔가가 필요함.
         //TODO : 프로필 체인지 키와 일반키/조합키 모두 훅 컨트롤러로 보내 전체를 대상으로 연쇄를 관리하게 바꾼다.
+        //아니면 이벤트 방식으로 처리는이 클래스에서, 인식은 훅 클래스에서 할 수도 있다.
         private void RegisterHotkeyInternal(int profileNum)
         {
             RegisterProfileChangingHotkeyInternal();
@@ -481,8 +484,8 @@ namespace AutoHotKey.MacroControllers
 
             List<HotkeyPair> list = mProfiles.ElementAt(profileNum - 1).GetHotkeyList();
 
-            //새로 핫 키들을 등록하는 것이므로 딕셔너리를 한 번 비워준다.
-            mHookController.ClearKeys();
+            //새로 핫 키들을 등록하는 것이므로 딕셔너리를 한 번 비워준다. -> 프로필 변경키를 위해 비우지 않는다. UnHookKeyboard에서 이미 비움.
+            //mHookController.ClearKeys();
 
             foreach (var hotkey in list)
             {
@@ -498,7 +501,7 @@ namespace AutoHotKey.MacroControllers
                     HotkeyInfo info = new HotkeyInfo(hotkey.Action.Key, hotkey.Action.Modifier);
                     mHookController.AddNewKey((int)vk, info);
                 }
-                else if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0x11, 65))
+                else if (!RegisterHotKey(helper.Handle, HOTKEY_ID, mod, vk))
                 {
                     // handle error
                     MessageBox.Show("Couldn't Register hotkey : " + vk.ToString() + "  " + mod.ToString());
@@ -508,7 +511,8 @@ namespace AutoHotKey.MacroControllers
 
             mIsHotkeyRegisterd = true;
 
-            mHookController.HookKeyboard();
+            //중복훅 등록 문제가 있는 듯함. 이미 프로필 변경키를 등록하며 훅을 실행했으니 여기서는 키만 추가한다
+            //mHookController.HookKeyboard();
         }
 
         //TODO : 나중에 후킹 및 핫 키 등록 등의 윈도우 메시지 관련 함수들을 따로 클래스를 만들어 정리하는 것을 고려한다.
@@ -521,15 +525,19 @@ namespace AutoHotKey.MacroControllers
             _source = HwndSource.FromHwnd(helper.Handle);
             _source.AddHook(HwndHook);
 
+            //변경키부터 새로 등록하는 것이니 한 번 초기화
+            mHookController.ClearKeys();
+
             int escape = mProfileChangeKeyContainer.GetEscapeKey();
 
             //ESC등록
-            if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, (uint)escape))
-            {
-                // handle error
-                //MessageBox.Show("Couldn't register Exit key");
-                return;
-            }
+            //if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, (uint)escape))
+            //{
+            //    // handle error
+            //    //MessageBox.Show("Couldn't register Exit key");
+            //    return;
+            //}
+            mHookController.AddSwitchingKey(new HotkeyInfo(escape, 0));
 
             //핫 키 프로그램이 활성화 상태일 때만 체인지 키를 등록해야함.
             if (mIsHotkeyActivated)
@@ -539,18 +547,21 @@ namespace AutoHotKey.MacroControllers
                     //112는 F1이다.
                     int vk = mProfileChangeKeyContainer.GetProfileChangeKeyFromIndex(mProfileActive - 1, i);
 
-
-                    if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, (uint)vk) && vk != -1)
-                    {
-                        // handle error
-                        MessageBox.Show("Couldn't register profile-changing key");
-                        return;
-                    }
+                    mHookController.AddSwitchingKey(new HotkeyInfo(vk, 0));
+                    //if (!RegisterHotKey(helper.Handle, HOTKEY_ID, 0, (uint)vk) && vk != -1)
+                    //{
+                    //    // handle error
+                    //    MessageBox.Show("Couldn't register profile-changing key");
+                    //    return;
+                    //}
                 }
 
             }
 
             mIsHotkeyRegisterd = true;
+
+            //만약 프로필변경키만 사용할 경우에 대비해 여기서도 훅을 실행한다
+            mHookController.HookKeyboard();
             //MessageBox.Show("체인지키 등록 완료");
         }
 
@@ -572,15 +583,13 @@ namespace AutoHotKey.MacroControllers
             mIsHotkeyRegisterd = false;
 
             mHookController.UnHookKeyboard();
-
-            //MessageBox.Show("등록해제");
         }
 
 
         //TODO : z=ctrl을 구현하기 위해 일단 Z를 핫 키로 등록하고 
         //Z가 인식되자 마다 새로 쓰레드를 생성하여 GetKeyState등을 무한루프로 돌려 Z가 keyup되는 순간을 포착한다.
         //최초로 Z가 둘릴때 keydown(ctrl)을 실행하고 최초로 keyup이 발생할 때 keyup(ctrl)을 발생시킨다.
-
+        //Depricated
         private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             const int WM_HOTKEY = 0x0312;
@@ -594,7 +603,7 @@ namespace AutoHotKey.MacroControllers
                             //MessageBox.Show("발동");
                             Debug.WriteLine("발동");
                             HotkeyInfo hotkeyClicked = new HotkeyInfo(lParam);
-                            ActChangeAndQuitKeys(hotkeyClicked);
+                            //OnSwitchingKeyEvent(null, hotkeyClicked);
 
                             handled = true;
                             break;
@@ -677,8 +686,9 @@ namespace AutoHotKey.MacroControllers
         }
 
         //입력키를 전부 단일 키로 설정할 시 이 함수는 체인지키와 탈출키만을 처리한다.
-        private void ActChangeAndQuitKeys(HotkeyInfo trigger)
+        private void OnSwitchingKeyEvent(object sender, HotkeyInfo trigger)
         {
+            Debug.WriteLine("체인지 발동");
             //ESCAPE인 경우 탈충
             if (trigger.Modifier == 0 && trigger.Key == mProfileChangeKeyContainer.GetEscapeKey())
             {

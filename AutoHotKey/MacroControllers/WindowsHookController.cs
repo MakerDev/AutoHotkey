@@ -106,6 +106,7 @@ namespace AutoHotKey.MacroControllers
         public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         public event EventHandler<KeyEventArgs> OnKeyEvent;
+        public event EventHandler<HotkeyInfo> OnSwitchEvent;  //프로필 체인지 키 이벤트
 
 
         private LowLevelKeyboardProc mProc;
@@ -147,10 +148,28 @@ namespace AutoHotKey.MacroControllers
             mIsPressedAlready.Add(newKey, false);
         }
 
+        //mKeyEventPair에서 info가 둘 다 -1이면 스위칭 키로 간주함
+        public void AddSwitchingKey(HotkeyInfo trigger)
+        {
+            //TODO : 추후에 조합키를 입력키로 하는게 가능해 지면 HotkeyInfo전체를 쓰기
+            //콜백이벤트의 인자로 전달되는 HotkeyInfo의 경우 key의 정보를 HotkeyInfo 형식으로 생성하여 넘김
+            mKeyEventPairs.Add(trigger.Key, new HotkeyInfo(-2, -2));
+            mIsPressedAlready.Add(trigger.Key, false);
+        }
+
         public void ClearKeys()
         {
             mKeyEventPairs.Clear();
             mIsPressedAlready.Clear();
+            mLastHotkeyDown = null;
+            mLastHotkeyUp = null;
+        }
+
+        //윈도우 훅으로 조합키를 감지한 경우에는 이쪽에서 이벤트가 중복감지되면 안됨.
+        //ctrl a 와 a가 모두 등록되어 있을 경우, ctrl+a를 통해 발생한 a 이벤트는 무시해야 함.
+        public void OnCombinationKeyPressed(HotkeyInfo info)
+        {
+
         }
 
 
@@ -203,26 +222,31 @@ namespace AutoHotKey.MacroControllers
                             mLastHotkeyDown = null;
 
                             return CallNextHookEx(mHookID, nCode, wParam, lParam);
+                            //return CallNextHookEx(mHookID, nCode, wParam, lParam);
                         }
                     }
                 }
                 #endregion
 
                 //이미 한번 눌러졌으면 이벤트 발생X, 그냥 입력 무시 단, z=shift와 마우스 이벤트 같은 특수키에만 해당
-                //0은 shift 같은 키가 출력인 애들이고 1, 2, 4,는 마우스 이므로 0이상 4이하로 설정
-                if (mIsPressedAlready[vkCode] && (mKeyEventPairs[vkCode].Key >= 0 && mKeyEventPairs[vkCode].Key <= 4))
+                //0은 shift 같은 키가 출력인 애들이고 1, 2, 4,는 마우스 이므로 1이상 4이하로 설정
+                if (mIsPressedAlready[vkCode] && (mKeyEventPairs[vkCode].Key >= 1 && mKeyEventPairs[vkCode].Key <= 4))
                 {
                     return new IntPtr(5);
                 }
 
-                //처음 발동 될 때 가장 최근 아웃풋을 설정해놈.
                 if (OnKeyEvent != null)
                 {
-
                     int key = mKeyEventPairs[vkCode].Key;
                     int mod = mKeyEventPairs[vkCode].Modifier;
 
-                    if (key >= 1 && key <= 4)
+                    //스위칭 키인 경우
+                    if (key == -2 && mod == -2)
+                    {
+                        Debug.WriteLine("스위칭 실행");
+                        OnSwitchEvent(this, new HotkeyInfo(vkCode, 0));
+                    }
+                    else if (key >= 1 && key <= 4)
                     {
                         //여기서 modifier는 반드시 0, 1, 2여야 한다.
                         OnMouseEventHookOccur(new MouseEventArgs(key, (EMouseEvents)mod, false));
@@ -230,7 +254,6 @@ namespace AutoHotKey.MacroControllers
                     else
                     {
                         mLastHotkeyDown = new HotkeyInfo(key, mod);
-
 
                         OnKeyEvent(this, new KeyEventArgs(vkCode, mKeyEventPairs[vkCode], false));
                     }

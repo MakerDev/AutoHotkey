@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:AutoHotKey.UserInterfaces"
         mc:Ignorable="d"
         Name="SettingWindow"
-        Title="MacroSetting" ResizeMode="NoResize" Height="500" Width="1700">
+        SizeToContent="WidthAndHeight"
+        Width="Auto" Height="Auto"
+        Title="MacroSetting" ResizeMode="NoResize">
 
     <Window.Resources>
         <Style x:Key="Keyboard" TargetType="Button">
@@ -46,7 +48,10 @@
 
     <Grid 
         Name="xGridMain"
-        RenderTransformOrigin="0,0">
+        Height="500" Width="1700"
+        >
+
+
         <Grid>
             <Image HorizontalAlignment="Left"         
                Height="322" Margin="24,86,0,0" 

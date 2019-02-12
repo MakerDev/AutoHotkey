@@ -23,8 +23,9 @@ namespace AutoHotKey.UserInterfaces
     public partial class MacroSettingWithPicture : Window, ISettingWindow
     {
         private const int MAXHOTKEY = 35;
-        const int VK_SPACE = 0x20;
-        const int VK_DELETE = 0x2E;
+        private const int VK_SPACE = 0x20;
+        private const int VK_DELETE = 0x2E;
+        private const double SCREEN_WIDTH_RITIO = 0.89;
 
         private List<HotkeyPair> mHotkeyList;
 
@@ -158,9 +159,13 @@ namespace AutoHotKey.UserInterfaces
         private void SetWindowSizeToResolution()
         {
             int screenWidth = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
+            int windowToWidth = (int)(screenWidth * SCREEN_WIDTH_RITIO);
 
-            //MessageBox.Show(screenWidth.ToString());
+            //Scaling 정보
+            double scaling = PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice.M11;
+            double ratioToAdjust = windowToWidth / xGridMain.Width / scaling;
 
+            xGridMain.LayoutTransform = new ScaleTransform(ratioToAdjust, ratioToAdjust, 0, 0);
         }
 
         //발견된 인덱스를 반환, -1일 경우 없다는 뜻
