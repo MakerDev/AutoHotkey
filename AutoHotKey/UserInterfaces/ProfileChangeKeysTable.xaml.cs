@@ -120,6 +120,10 @@ namespace AutoHotKey.UserInterfaces
             xStackMain.Children.Add(saveButton);
         }
 
+        //TODO : 매크로 전환키 선택도 select key 기능으로 할 수 있도록 하기
+        //누르면 mAcrosettingwithpicture창을 그대로 오픈(대신 우측 창은 collapsed로 변경)
+        //OnKeyClicked만 좀 개조해서 이미 프로필에 있는 키 고르면 고를 수 없다고 메시지 띄우고
+        //괜찮으면 리턴해서 나온다.(인자로 SpecialKey... 창을 보내고 SEttingWindow에서는 만약 SpecialWindow가 null이 아니면 위의 액션을 실행
         private void OnProfileChangeKeyTabelClosed(object sender, System.ComponentModel.CancelEventArgs e)
         {
             HotKeyController.Instance.EndSetProfileChangingKeys();

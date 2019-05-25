@@ -41,6 +41,9 @@ namespace AutoHotKey.UserInterfaces
         private bool mIsSelectingSpecialKey = false;
         private List<Window> mWindowsToClose = new List<Window>();
 
+        private int mModifierIn = 0;
+        private int mModifierOut = 0;
+
         //TODO : RenderTransform으로 해상도에 따른 크기 문제 해결하기  
         public MacroSettingWithPicture(int profileNum)
         {
@@ -192,6 +195,13 @@ namespace AutoHotKey.UserInterfaces
             cbWindowToDo.IsChecked = false;
             cbShiftToDo.IsChecked = false;
 
+            cbNoMod.IsChecked = false;
+            cbAlt.IsChecked = false;
+            cbControl.IsChecked = false;
+            cbWindow.IsChecked = false;
+            cbShift.IsChecked = false;
+
+
             xStackModifierSetter.Visibility = Visibility.Visible;
             xLabelNoModifier.Visibility = Visibility.Collapsed;
 
@@ -199,6 +209,9 @@ namespace AutoHotKey.UserInterfaces
 
             currentKeyIn = 0;
             currentKeyOut = 0;
+
+            mModifierIn = 0;
+            mModifierOut = 0;        
         }
 
         //그림의 키보드가 눌린경우 실행됨. name을 통해 어떤 키인지 파악하고 
@@ -231,6 +244,8 @@ namespace AutoHotKey.UserInterfaces
             {
                 HotkeyPair currentHotkey = mHotkeyList[indexOfHotkey];
                 labelCurrentHotkey.Content = tempCurrentButton.Tag.ToString();
+                //TODO : 조합키 표시 때문에
+                labelCurrentHotkey.Content = currentHotkey.Trigger.ToString();
 
                 labelCurrentToDo.Text = currentHotkey.Action.ToString();
 
@@ -279,9 +294,40 @@ namespace AutoHotKey.UserInterfaces
             }
         }
 
+        //TODO : 훅 컨트롤러에서 처럼. 그냥 nomod를 없애고 체크박스에 따라서 mod에 더하거나 빼는 방식 채택
+        private void OnCheckBoxChanged(object sender, RoutedEventArgs e)
+        {
+            CheckBox checkBox = sender as CheckBox;
+
+            if (ReferenceEquals(sender, cbNoMod) && cbNoMod.IsChecked.Value)
+            {
+                cbAlt.IsChecked = false;
+                cbControl.IsChecked = false;
+                cbWindow.IsChecked = false;
+                cbShift.IsChecked = false;
+            }
+            else
+            {
+                var check = sender as CheckBox;
+                if (check != null && check.IsChecked.Value)
+                {
+                    cbNoMod.IsChecked = false;
+                }
+            }
+
+            if (checkBox.IsChecked.Value)
+            {
+                mModifierIn |= Convert.ToInt32(checkBox.Tag.ToString());
+            }
+            else
+            {
+                mModifierIn -= Convert.ToInt32(checkBox.Tag.ToString());
+            }
+        }
 
         private void OnToDoCheckBoxChanged(object sender, RoutedEventArgs e)
         {
+            CheckBox box = sender as CheckBox;
 
             if (ReferenceEquals(sender, cbNoModToDo) && cbNoModToDo.IsChecked.Value)
             {
@@ -297,6 +343,15 @@ namespace AutoHotKey.UserInterfaces
                 {
                     cbNoModToDo.IsChecked = false;
                 }
+            }
+
+            if (box.IsChecked.Value)
+            {
+                mModifierOut |= Convert.ToInt32(box.Tag.ToString());
+            }
+            else
+            {
+                mModifierOut -= Convert.ToInt32(box.Tag.ToString());
             }
         }
 
@@ -361,7 +416,6 @@ namespace AutoHotKey.UserInterfaces
             }
 
             //입력은 반드시 단일키
-            int modIn = EModifiers.NoMod;
             int modOut = EModifiers.NoMod;
 
             if (currentKeyOut < 0)
@@ -371,18 +425,18 @@ namespace AutoHotKey.UserInterfaces
             }
             else
             {
-                if (cbAltToDo.IsChecked.Value) modOut |= EModifiers.Alt;
-                if (cbControlToDo.IsChecked.Value) modOut |= EModifiers.Ctrl;
-                if (cbShiftToDo.IsChecked.Value) modOut |= EModifiers.Shift;
-                if (cbWindowToDo.IsChecked.Value) modOut |= EModifiers.Win;
+                //if (cbAltToDo.IsChecked.Value) modOut |= EModifiers.Alt;
+                //if (cbControlToDo.IsChecked.Value) modOut |= EModifiers.Ctrl;
+                //if (cbShiftToDo.IsChecked.Value) modOut |= EModifiers.Shift;
+                //if (cbWindowToDo.IsChecked.Value) modOut |= EModifiers.Win;
+                modOut = mModifierOut;
+
             }
-
-
 
             HotkeyPair hotkey;
 
             //else 지움
-            hotkey = new HotkeyPair(new HotkeyInfo(currentKeyIn, modIn), new HotkeyInfo(currentKeyOut, modOut));
+            hotkey = new HotkeyPair(new HotkeyInfo(currentKeyIn, mModifierIn), new HotkeyInfo(currentKeyOut, modOut));
 
 
             if (HotKeyController.Instance.AddNewHotkey(hotkey))
@@ -469,5 +523,7 @@ namespace AutoHotKey.UserInterfaces
                 btn.Content = "Select Key";
             }
         }
+
+
     }
 }

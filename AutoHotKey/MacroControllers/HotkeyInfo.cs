@@ -37,7 +37,6 @@ namespace AutoHotKey.MacroControllers
             Modifier = modifier;
         }
 
-
         public override string ToString()
         {
             string info = "";

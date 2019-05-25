@@ -116,14 +116,7 @@
               VerticalAlignment="Center" 
               Width="353"
               Name="sHotKeySetting" Margin="0,20,39,-3">
-
-            <StackPanel>
-                <Label
-                    HorizontalContentAlignment="Center" FontSize="15">
-                    Select a key for input
-                </Label>
-
-                <Label 
+            <Label 
                     Content=" Key In"
                     HorizontalContentAlignment="Center"
                     HorizontalAlignment="Center"                    
@@ -131,6 +124,39 @@
                     Width="131"
                     Margin="104,5,118,0"
                     />
+            <StackPanel>
+                <TextBox 
+                    Text=" &#x9;   Combination In"
+                    IsReadOnly="True"
+                    FontSize="20"
+                    Margin="0, 0, 0, 0" BorderThickness="0,0,0,1"
+                />
+
+                <StackPanel 
+                    Name="xStackModifierSetterForIn"
+                    Orientation="Horizontal"
+                    Visibility="Visible"
+                    HorizontalAlignment="Center"
+                    Margin="0, 8, 0, 0"
+                    >
+                    <CheckBox x:Name="cbNoMod" Content="NoMod"
+                              Margin="7, 0 , 0,0" Tag="0"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbControl" Content="Control"
+                              Margin="10, 0 , 0,0"  Tag="2"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbAlt" Content="Alt"
+                              Margin="10, 0 , 0,0"  Tag="1"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbShift" Content="Shift"
+                              Margin="10, 0 , 0,0"  Tag="4"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                    <CheckBox x:Name="cbWindow" Content="Window"
+                              Margin="10, 0 , 0,0"  Tag="8"
+                              Checked="OnCheckBoxChanged" Unchecked="OnCheckBoxChanged"/>
+                </StackPanel>
+
+
                 <StackPanel 
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
@@ -173,19 +199,19 @@
                     Margin="0, 8, 0, 0"
                     >
                     <CheckBox x:Name="cbNoModToDo" Content="NoMod"
-                              Margin="7, 0 , 0,0" 
+                              Margin="7, 0 , 0,0"   Tag="0"
                               Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
                     <CheckBox x:Name="cbControlToDo" Content="Control"
-                              Margin="10, 0 , 0,0"
+                              Margin="10, 0 , 0,0"  Tag="2"
                               Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
                     <CheckBox x:Name="cbAltToDo" Content="Alt"
-                              Margin="10, 0 , 0,0"
+                              Margin="10, 0 , 0,0"  Tag="1"
                               Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
                     <CheckBox x:Name="cbShiftToDo" Content="Shift"
-                              Margin="10, 0 , 0,0"
+                              Margin="10, 0 , 0,0"  Tag="4"
                               Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
                     <CheckBox x:Name="cbWindowToDo" Content="Window"
-                              Margin="10, 0 , 0,0"
+                              Margin="10, 0 , 0,0"  Tag="8"
                               Checked="OnToDoCheckBoxChanged" Unchecked="OnToDoCheckBoxChanged"/>
                 </StackPanel>
                 
