@@ -55,8 +55,7 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnBtnSaveClicked(object sender, RoutedEventArgs e)
         {
-            //직렬화를 이용해 hotkeyList를 저장한다.
-            string path = Environment.CurrentDirectory + "/Options"  + ".json";
+            string path = Environment.CurrentDirectory + "/SaveFiles/Options" + ".json";
             if (File.Exists(path))
             {
                 File.Delete(path);
@@ -76,7 +75,7 @@ namespace AutoHotKey.UserInterfaces
 
         private void LoadOptionData()
         {
-            string path = Environment.CurrentDirectory + "/Options" + ".json";
+            string path = Environment.CurrentDirectory + "/SaveFiles/Options" + ".json";
 
             if (File.Exists(path))
             {

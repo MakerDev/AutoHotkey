@@ -86,7 +86,7 @@ namespace AutoHotKey.MacroControllers
         public bool SaveProfileChangeKeys()
         {
             //직렬화를 이용해 hotkeyList를 저장한다.
-            string path = Environment.CurrentDirectory + "/" + "ProfileChangeKeys" + ".json";
+            string path = Environment.CurrentDirectory + "/SaveFiles/" + "ProfileChangeKeys" + ".json";
 
             if (File.Exists(path))
             {
@@ -119,7 +119,7 @@ namespace AutoHotKey.MacroControllers
         {
             //파일 존재 여부 반드시 체크
 
-            string path = Environment.CurrentDirectory + "/" + "ProfileChangeKeys" + ".json";
+            string path = Environment.CurrentDirectory + "/SaveFiles/" + "ProfileChangeKeys" + ".json";
 
             List<int> keyList = new List<int>();
 

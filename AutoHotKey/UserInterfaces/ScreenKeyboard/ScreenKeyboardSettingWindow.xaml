@@ -1,0 +1,301 @@
+﻿<Window x:Class="AutoHotKey.UserInterfaces.ScreenKeyboardSettingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AutoHotKey.UserInterfaces"
+        xmlns:custom ="clr-namespace:AutoHotKey.UserInterfaces.ScreenKeyboard.CustomControls"
+        mc:Ignorable="d"
+        ResizeMode="CanMinimize"
+        Title="ScreenKeyboardSettingWindow" Height="1000" Width="1200">
+
+    <StackPanel>
+        <Rectangle Fill="Black" Height ="1" Stroke="Black">
+            
+        </Rectangle>
+        <StackPanel 
+            x:Name="xStackInformaion" 
+            Orientation="Horizontal"
+            Height="400"
+            >
+            <Frame x:Name="xFramePreview"
+                   HorizontalContentAlignment="Left"
+                   VerticalContentAlignment="Top"
+                   Width="600" BorderBrush="Black" 
+                   BorderThickness="0,0,1,0" >
+            </Frame>
+            <StackPanel>
+                <Label 
+                    x:Name="xLabelCurrentWindow"
+                    HorizontalContentAlignment="Center"
+                    Width="595" Margin="0,61,0,0" FontSize="48">
+                        WINDOW
+                </Label>
+                <Button
+                    Margin="0, 100,0,0"
+                    Content="SAVE"
+                    Width="150"
+                    Click="OnSaveClicked"
+                    Height="35" FontSize="16" FontWeight="Bold">
+                    
+                </Button>
+            </StackPanel>
+
+
+        </StackPanel>
+
+        <Frame x:Name="xFrameKeySelector"
+               Height="250" BorderBrush="Black" 
+               BorderThickness="0,1" Margin="0"
+               />
+
+        <StackPanel 
+            Name="xOptionStack"
+            Orientation="Horizontal"
+            Height="320">
+
+            <StackPanel
+                x:Name="xStackScreenOptions"
+                Width="250">
+                <Label
+                    HorizontalContentAlignment="Center" 
+                    FontWeight="Bold" FontSize="20">
+                    Screen Options
+                </Label>
+
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Margin="0,40,0,10"
+                    Height="80"
+                    Orientation="Horizontal">
+                    <StackPanel>
+                        <Label>
+                            Screen Width:
+                        </Label>
+
+                        <custom:NumberTextbox
+                            x:Name="xNumberTextBoxScreenWidth"
+                            
+                            />
+
+
+                    </StackPanel>
+                    <StackPanel
+                        Margin="10,0,0,0">
+                        <Label>
+                            Screen Height:
+                        </Label>
+                        <custom:NumberTextbox
+                            x:Name="xNumberTextBoxScreenHeight"
+                            
+                            />
+
+                    </StackPanel>
+
+                </StackPanel>
+
+                <Button
+                    Click="OnResizeClicked"
+                    Width="200"
+                    Height="25">
+                    Resize
+                </Button>
+                <Button
+                    x:Name="xBtnAddNewKey"
+                    Click="OnAddNewKeyClicked"
+                    Margin="0, 15,0,0"
+                    Width="200"
+                    Height="25">
+                    Add New Key
+                </Button>
+
+                <Button
+                    x:Name="xBtnUndo"
+                    Margin="0, 15,0,0"
+                    Width="200"
+                    Height="25"
+                    Click="OnUndoClicked"
+                    IsEnabled="False">
+                    Undo
+                </Button>
+            </StackPanel>
+
+            <Rectangle
+                Width="1" Fill="Black"/>
+
+            <StackPanel
+                Visibility="Visible"
+                x:Name="xStackButtonOptions"
+                Orientation="Horizontal">
+
+                <StackPanel
+                    Width="250">
+                    <Label 
+                        Content="Button Info" HorizontalAlignment="Center" FontWeight="Bold" FontSize="18" />
+
+                    <StackPanel
+                        Margin="0, 0,0,0"
+                        HorizontalAlignment="Center"
+                        x:Name="xStackButtonInfo"
+                        Orientation="Horizontal">
+                        <StackPanel
+                            Width="100"
+                            Name="xStackButtonShape" VerticalAlignment="Top">
+                            <Label Content="Width" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" FontSize="16"/>
+
+                            <custom:NumberTextbox
+                                x:Name="xTextBoxBtnWidth"/>
+
+                            <Label Content="Left" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" FontSize="16"/>
+                            <custom:NumberTextbox
+                                x:Name="xTextBoxBtnX"
+                                />
+
+                        </StackPanel>
+                        <StackPanel
+                            Margin="10, 0, 0, 0"
+                            Width="100"
+                            Name="xStackBtnPosition" VerticalAlignment="Top">
+                            <Label Content="Height" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" FontSize="16"/>
+                            
+                            <custom:NumberTextbox 
+                                x:Name="xTextBoxBtnHeight"/>
+
+                            <Label Content="TOP" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" FontSize="16"/>
+                            <custom:NumberTextbox
+                                x:Name="xTextBoxBtnY"
+                                />
+
+
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Label
+                        Width="170"
+                       Margin="0, 15,0,0">
+                        Lable:
+                    </Label>
+                    <TextBox
+                        Width="170"
+                        Height="20"
+                        LostFocus="OnLostFocus"
+                        x:Name="xTextBoxBtnLable">
+                        New
+                    </TextBox>
+
+                    <Rectangle
+                        Margin="0, 15,0,0"
+                        Height="1" Fill="Black"
+                        />
+
+                    <Label Content="Action" 
+                           HorizontalAlignment="Center" 
+                            FontWeight="Bold" FontSize="16" Height="35"/>
+                    <Label x:Name="xLableHotkeyInfoCurrent"
+                           Height="20"
+                           Content="Current : Nothing Yet" 
+                           HorizontalAlignment="Center" 
+                           Padding="5,0"
+                           />
+                    <Label x:Name="xLableHotkeyInfoNew"
+                           Height="25"
+                           Content="New : Nothing Yet" 
+                           HorizontalAlignment="Center" Padding="5,0,5,5"
+                           />
+
+                </StackPanel>
+
+                <Rectangle Fill="Black"
+                    Width="1"
+                    />
+
+                <GroupBox 
+                    x:Name="xGroupButtonColor"
+                    Header="Color"
+                    Width="200"
+                    Height="250" 
+                    Margin="5,0,0,0"
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Center" 
+                    FontSize="16" Foreground="Black" 
+                    BorderThickness="2">
+
+                    <StackPanel
+                        x:Name="xStackButtonColors"
+                        >
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox 
+                    x:Name="xGroupFontColor"
+                    Header="Font Color"
+                    Width="200"
+                    Height="250" 
+                    Margin="10,0,0,0"
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Center" FontSize="16" 
+                    BorderThickness="2">
+
+                    <StackPanel
+                        x:Name="xStackFontColors"
+                        >
+                        
+                    </StackPanel>
+                </GroupBox>
+
+
+                <Border
+                    Margin="10,10,0,0"
+                    Height= "150"
+                    Width="150"
+                    BorderBrush="#FF7C7C7C" BorderThickness="1">
+                    <Grid 
+                        x:Name="xGridButtonPreview"
+                        Width="150"
+                        Height="150"                       
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"             
+                    >
+
+                    </Grid>
+                </Border>
+
+                <StackPanel
+                    Margin="10, 0,0,0"
+                    VerticalAlignment="Center">
+                    <Button Click="OnOkClicked" 
+                        Margin="0, 0,0,0"
+                        Width="70"
+                        Height="25" Content="Ok"/>
+
+                    <Button 
+                        x:Name="xBtnDeleteKey"
+                        Visibility="Collapsed"
+                        Click="OnDeleteClicked" 
+                        Margin="0, 15,0,0"
+                        Width="70"
+                        Height="25" Content="Delete"/>
+
+
+                    <Button Click="OnCancleClicked" 
+                        Margin="0, 15,0,0"
+                        Width="70"
+                        Height="25" Content="Cancle"/>
+
+                </StackPanel>
+
+
+
+            </StackPanel>
+        </StackPanel>
+
+    </StackPanel>
+</Window>

@@ -64,6 +64,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="MacroControllers\ISettingWindow.cs" />
+    <Compile Include="MacroControllers\ScreenKeyboard\ScreenKeyboard.cs" />
+    <Compile Include="MacroControllers\ScreenKeyboard\ScreenKeyboardManager.cs" />
     <Compile Include="UserInterfaces\MacroSettingWithPicture.xaml.cs">
       <DependentUpon>MacroSettingWithPicture.xaml</DependentUpon>
     </Compile>
@@ -72,6 +74,27 @@
     </Compile>
     <Compile Include="UserInterfaces\ProfileChangeKeysTable.xaml.cs">
       <DependentUpon>ProfileChangeKeysTable.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterfaces\ScreenKeyboard\CustomControls\ColorSelector.xaml.cs">
+      <DependentUpon>ColorSelector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterfaces\ScreenKeyboard\CustomControls\NumberTextbox.xaml.cs">
+      <DependentUpon>NumberTextbox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterfaces\ScreenKeyboard\CustomControls\ScreenButton.xaml.cs">
+      <DependentUpon>ScreenButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterfaces\ScreenKeyboard\ScreenKeyboardPage.xaml.cs">
+      <DependentUpon>ScreenKeyboardPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterfaces\ScreenKeyboard\ScreenKeyboardSettingWindow.xaml.cs">
+      <DependentUpon>ScreenKeyboardSettingWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterfaces\ScreenKeyboard\ScreenKeyboardWindow.xaml.cs">
+      <DependentUpon>ScreenKeyboardWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterfaces\SelectKeyPage.xaml.cs">
+      <DependentUpon>SelectKeyPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserInterfaces\SpecialKeySelection.xaml.cs">
       <DependentUpon>SpecialKeySelection.xaml</DependentUpon>
@@ -120,6 +143,34 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserInterfaces\ScreenKeyboard\CustomControls\ColorSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserInterfaces\ScreenKeyboard\CustomControls\NumberTextbox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserInterfaces\ScreenKeyboard\CustomControls\ScreenButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserInterfaces\ScreenKeyboard\ScreenKeyboardPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserInterfaces\ScreenKeyboard\ScreenKeyboardSettingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserInterfaces\ScreenKeyboard\ScreenKeyboardWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserInterfaces\SelectKeyPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserInterfaces\SpecialKeySelection.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -163,6 +214,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="TitleIcon.ico" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Libs\WindowsInput.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

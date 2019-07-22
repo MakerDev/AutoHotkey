@@ -48,9 +48,6 @@
                 FontSize="18"
                 Margin="10,60,0,0" BorderThickness="0,0,0,0" FontWeight="Bold" Width="304"/>
 
-
-
-
             <TextBox 
                 x:Name="xTextBoxExplanation"
                 BorderThickness="1,2,2,2"

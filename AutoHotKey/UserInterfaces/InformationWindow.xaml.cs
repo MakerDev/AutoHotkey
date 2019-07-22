@@ -54,7 +54,7 @@ namespace AutoHotKey.UserInterfaces
             //TODO : 포인트를 기반으로 현재 해상도와 비율을 구해서 절대 위치가 아닌
             //비율에 따른 상대위치로 저장하도록 하기
 
-            string path = Environment.CurrentDirectory + "/" + "StartingData" + ".json";
+            string path = Environment.CurrentDirectory + "/SaveFiles/" + "StartingData" + ".json";
 
             if (File.Exists(path))
             {
@@ -73,7 +73,7 @@ namespace AutoHotKey.UserInterfaces
 
         public bool LoadPositionData()
         {
-            string path = Environment.CurrentDirectory + "/" + "StartingData" + ".json";
+            string path = Environment.CurrentDirectory + "/SaveFiles/" + "StartingData" + ".json";
 
             if (File.Exists(path) && OptionWindow.Options.IsSaveInformationWindowStartingPosition)
             {

@@ -5,67 +5,68 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AutoHotKey"
         mc:Ignorable="d"
-        Title="MainWindow" Height="460" Width="660"
+        Title="MainWindow" Height="880" Width="680"
         ResizeMode="CanMinimize"
         Name="xWindowMain">
 
 
-    <Grid>
-        <StackPanel>
-            <Menu IsMainMenu="True" VerticalContentAlignment="Center" >
-                <MenuItem
+    <StackPanel>
+        <Grid>
+            <StackPanel>
+                <Menu IsMainMenu="True" VerticalContentAlignment="Center" >
+                    <MenuItem
                     Margin="8, 0, 0, 0"
                     Header="Options">
-                    <MenuItem Header="_Set Options" Click="OnBtnSettingOptionsClicked"/>
-                    <Separator/>
+                        <MenuItem Header="_Set Options" Click="OnBtnSettingOptionsClicked"/>
+                        <Separator/>
 
-                    <MenuItem Header="_Exit"  Click="OnExitBtnClicked"/>
-                </MenuItem>
-                <MenuItem                   
+                        <MenuItem Header="_Exit"  Click="OnExitBtnClicked"/>
+                    </MenuItem>
+                    <MenuItem                   
                     Margin="8,0,0,0"
                     Header="_Setting">
-                    <MenuItem                          
+                        <MenuItem                          
                         Tag="-1"
                         Header="_Set Deactivating Key"
                         Click="OnBtnSetProfileChangeKeyClicked" />
-                    <MenuItem
+                        <MenuItem
                         Tag="0"
                         Header="_Set All Profile Changing Key" 
                         Click="OnBtnSetProfileChangeKeyClicked" 
                         />
-                </MenuItem>
-                <MenuItem
+                    </MenuItem>
+                    <MenuItem
                     Margin="8, 0, 0, 0"
                     Header="Help">
-                    <MenuItem Header="_Tips" Click="OnBtnHelpClicked"/>
-                </MenuItem>
-            </Menu>
-        </StackPanel>
+                        <MenuItem Header="_Tips" Click="OnBtnHelpClicked"/>
+                    </MenuItem>
+                </Menu>
+            </StackPanel>
 
-        <ScrollViewer 
+            <ScrollViewer 
             Name="scrViewerProfiles"
             HorizontalAlignment="Left" 
             Height="412" 
             HorizontalContentAlignment="Left"
             VerticalAlignment="Top" 
-            Width="330" Margin="0,19,0,0"           
+            Width="330" Margin="0,19,0,0" BorderThickness="0,0,0,13"           
             />
-        <StackPanel
+            <StackPanel
               Visibility="Visible"
               HorizontalAlignment="Left"              
               Height="431" Margin="330,0,0,0" 
               VerticalAlignment="Top" 
-              Width="324"
+              Width="340"
               Name="sProfileContent">
 
-            <Label Name="tbCurrentProfile"                
+                <Label Name="tbCurrentProfile"                
                      Content="Profile selected : "
                      HorizontalAlignment ="Center"
                      FontSize="25"
                      Margin="0, 55, 0, 0" BorderThickness="0,3,0,0" FontWeight="Bold"/>
 
 
-            <Button Name="btnEditProfile"
+                <Button Name="btnEditProfile"
                     Content="Edit Profile" 
                     Width="250" Height="35" 
                     Margin="0, 150, 0 ,0"
@@ -73,15 +74,60 @@
                     Click="OnEditProfileCliked"
                     />
 
-            <Button Name="btnDeleteProfile"
+                <Button Name="btnDeleteProfile"
                     Content="Delete Profile" 
                     Width="250" Height="35" 
                     Margin="0, 15, 0 ,0"
                     FontSize="20" 
                     Click="OnDeleteProfileClicked"
                     />
-        </StackPanel>
-    </Grid>
+            </StackPanel>
+        </Grid>
+
+        <Rectangle Height="1" Fill="Black"/>
+
+        <Grid>
+            <ScrollViewer 
+                Name="scrViewerScreenKeyboards"
+                HorizontalAlignment="Left" 
+                Height="412" 
+                HorizontalContentAlignment="Left"
+                VerticalAlignment="Top" 
+                Width="330" 
+            />
+            <StackPanel
+              Visibility="Visible"
+              HorizontalAlignment="Left"              
+              Height="431" Margin="330,0,0,0" 
+              VerticalAlignment="Top" 
+              Width="340"
+              Name="sScreenKeyboardContent">
+
+                <Label Name="tbCurrentScreenKeyboard"                
+                     Content="ScreenKeyboard selected : "
+                     HorizontalAlignment ="Center"
+                     FontSize="25"
+                     Margin="0, 55, 0, 0" BorderThickness="0,3,0,0" FontWeight="Bold"/>
+
+
+                <Button Name="btnEditScreenKeyboard"
+                    Content="Edit Keyboard" 
+                    Width="250" Height="35" 
+                    Margin="0, 150, 0 ,0"
+                    FontSize="20" 
+                    Click="OnEditKeyboardCliked"
+                    />
+
+                <Button Name="btnDeleteScreenKeyboard"
+                    Content="Delete Keyboard" 
+                    Width="250" Height="35" 
+                    Margin="0, 15, 0 ,0"
+                    FontSize="20" 
+                    Click="OnDeleteKeyboardClicked"
+                    />
+            </StackPanel>
+        </Grid>
+    </StackPanel>
 </Window>
 
     

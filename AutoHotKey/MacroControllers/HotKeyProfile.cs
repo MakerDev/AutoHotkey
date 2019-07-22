@@ -50,7 +50,7 @@ namespace AutoHotKey.MacroControllers
         public bool SaveProfile(string name)
         {
             //직렬화를 이용해 hotkeyList를 저장한다.
-            string path = Environment.CurrentDirectory + "/" + name + ".json";
+            string path = Environment.CurrentDirectory + "/SaveFiles/" + name + ".json";
             if (File.Exists(path))
             {
                 File.Delete(path);
@@ -68,7 +68,7 @@ namespace AutoHotKey.MacroControllers
 
         public bool LoadProfile(string name)
         {
-            string path = Environment.CurrentDirectory + "/" + name + ".json";
+            string path = Environment.CurrentDirectory + "/SaveFiles/" + name + ".json";
 
             if (File.Exists(path))
             {

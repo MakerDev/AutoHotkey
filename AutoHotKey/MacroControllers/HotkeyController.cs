@@ -38,7 +38,6 @@ namespace AutoHotKey.MacroControllers
         public const int HOTKEY_ID = 9000;
 
         private MainWindow mHelper = null;
-        private HwndSource _source;
 
         private WindowsHookController mHookController = null;
 
@@ -241,6 +240,30 @@ namespace AutoHotKey.MacroControllers
         {
             return mProfileChangeKeyContainer.GetEscapeKey();
         }
+        public void SaveProfileChangeKeys()
+        {
+            mProfileChangeKeyContainer.SaveProfileChangeKeys();
+        }
+
+        public void OnScreenKeyboardOpen()
+        {
+            if(mIsHotkeyActivated)
+            {
+                mIsHotkeyActivated = false;
+
+                UnRegisterHotKeyInternal();
+
+                RegisterProfileChangingHotkeyInternal();
+                ChangeActiveProfileInternal(-1);
+                mHookController.UnHookKeyboard();
+
+            }
+        }
+
+        public void OnAllScreenKeyboardClose()
+        {
+            mHookController.HookKeyboard();
+        }
 
         //중복이 있으면 기본값으로 바꿔주는 역할. 리턴 값은 수정된 변경 키 개수
         //allToDefault = true 이면 모든 체인지키를 기본으로
@@ -314,7 +337,7 @@ namespace AutoHotKey.MacroControllers
 
             for (int i = 1; i <= mProfiles.Count; i++)
             {
-                path = Environment.CurrentDirectory + "/" + "profile" + i.ToString() + ".json";
+                path = Environment.CurrentDirectory + "/SaveFiles/" + "profile" + i.ToString() + ".json";
                 File.Delete(path);
             }
         }
@@ -686,10 +709,6 @@ namespace AutoHotKey.MacroControllers
             }
 
         }
-
-        public void SaveProfileChangeKeys()
-        {
-            mProfileChangeKeyContainer.SaveProfileChangeKeys();
-        }
     }
+
 }
