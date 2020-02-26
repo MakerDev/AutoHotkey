@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace AutoHotKey.MacroControllers
 {
     [Serializable()]
-    public class HotkeyPair
+    public class HotkeyPair_legacy
     {
         public string Explanation = "";
 
@@ -20,16 +20,10 @@ namespace AutoHotKey.MacroControllers
             get; private set;
         }
 
-        public HotkeyInfo EndingAction
-        {
-            get; private set;
-        }
-
-        public HotkeyPair(HotkeyInfo trigger, HotkeyInfo action, HotkeyInfo endingAction = null)
+        public HotkeyPair_legacy(HotkeyInfo trigger, HotkeyInfo action)
         {
             Trigger = trigger;
             Action = action;
-            EndingAction = endingAction;
         }
     }
 }

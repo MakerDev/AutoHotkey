@@ -9,9 +9,12 @@
         ResizeMode="CanMinimize"
         Title="ScreenKeyboardSettingWindow" Height="1000" Width="1200">
 
-    <StackPanel>
+    <StackPanel
+        Height="1000" Width="1200"
+        x:Name="xStackMain" RenderTransformOrigin="0.5,0.5">
+
         <Rectangle Fill="Black" Height ="1" Stroke="Black">
-            
+
         </Rectangle>
         <StackPanel 
             x:Name="xStackInformaion" 
@@ -29,7 +32,7 @@
                     x:Name="xLabelCurrentWindow"
                     HorizontalContentAlignment="Center"
                     Width="595" Margin="0,61,0,0" FontSize="48">
-                        WINDOW
+                    WINDOW
                 </Label>
                 <Button
                     Margin="0, 100,0,0"
@@ -37,7 +40,7 @@
                     Width="150"
                     Click="OnSaveClicked"
                     Height="35" FontSize="16" FontWeight="Bold">
-                    
+
                 </Button>
             </StackPanel>
 
@@ -45,6 +48,7 @@
         </StackPanel>
 
         <Frame x:Name="xFrameKeySelector"
+               Width="1200"
                Height="250" BorderBrush="Black" 
                BorderThickness="0,1" Margin="0"
                />
@@ -163,7 +167,7 @@
                             <Label Content="Height" 
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Center" FontSize="16"/>
-                            
+
                             <custom:NumberTextbox 
                                 x:Name="xTextBoxBtnHeight"/>
 
@@ -247,7 +251,7 @@
                     <StackPanel
                         x:Name="xStackFontColors"
                         >
-                        
+
                     </StackPanel>
                 </GroupBox>
 

@@ -160,7 +160,7 @@ namespace AutoHotKey.UserInterfaces.ScreenKeyboard
             }
             else
             {
-                e.ScreenButton.SetButtonStyle(thisKey);
+                e.ScreenButton.SetButtonStyle(thisKey, true);
                 thisKey.IsOn = true;
 
                 DownKeyInternal(thisKey.Action);

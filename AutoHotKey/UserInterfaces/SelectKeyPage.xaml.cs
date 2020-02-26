@@ -75,14 +75,14 @@ namespace AutoHotKey.UserInterfaces
                 if (currentKeyOut < 0)
                 {
                     tbKeySetToDo.Text = GetMouseEventExplanation(currentKeyOut);
-                    xStackModifierSetter.Visibility = Visibility.Collapsed;
-                    xLabelNoModifier.Visibility = Visibility.Visible;
+                    //xStackModifierSetter.Visibility = Visibility.Collapsed;
+                    //xLabelNoModifier.Visibility = Visibility.Visible;
                 }
                 else
                 {
                     tbKeySetToDo.Text = KeyInterop.KeyFromVirtualKey(currentKeyOut).ToString();
-                    xStackModifierSetter.Visibility = Visibility.Visible;
-                    xLabelNoModifier.Visibility = Visibility.Collapsed;
+                    //xStackModifierSetter.Visibility = Visibility.Visible;
+                    //xLabelNoModifier.Visibility = Visibility.Collapsed;
 
                 }
             }
@@ -99,6 +99,20 @@ namespace AutoHotKey.UserInterfaces
                     window.Close();
                 }
             }
+        }
+        public void SetSelectKeyOption(bool toSelect)
+        {
+            mIsSelectingKey = toSelect;
+
+            if (mIsSelectingKey)
+            {
+                xBtnToSelectMode.Content = "Stop Selceting";
+            }
+            else
+            {
+                xBtnToSelectMode.Content = "Select Key";
+            }
+
         }
 
 
@@ -166,6 +180,11 @@ namespace AutoHotKey.UserInterfaces
 
         private void SetWindowSizeToResolution()
         {
+            if(currentProfile < 0)
+            {
+                return;
+            }
+
             int screenWidth = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
             int windowToWidth = (int)(screenWidth * SCREEN_WIDTH_RITIO);
 
@@ -197,7 +216,7 @@ namespace AutoHotKey.UserInterfaces
             return -1;
         }
 
-        private void ClearHotkeySettingOptions()
+        public void ClearHotkeySettingOptions()
         {
             cbNoModToDo.IsChecked = false;
             cbAltToDo.IsChecked = false;
@@ -223,6 +242,8 @@ namespace AutoHotKey.UserInterfaces
 
             mModifierIn = 0;
             mModifierOut = 0;
+
+            SetSelectKeyOption(false);
         }
 
         //그림의 키보드가 눌린경우 실행됨. name을 통해 어떤 키인지 파악하고 
@@ -430,24 +451,34 @@ namespace AutoHotKey.UserInterfaces
             //입력은 반드시 단일키
             int modOut = EModifiers.NoMod;
 
+            
             if (currentKeyOut < 0)
             {
+                //마우스인 경우의 처리
+
                 modOut = Convert.ToInt32(currentKeyOut.ToString().Substring(2, 1));
+                modOut *= 100;
+
+                
+
+                //modifier의 최대크기가 0x0008로 한 자리 수이니 100배한 click, down여부를 더하면 정보가 섞이지 않는다.
+                if (mModifierOut > 0)
+                {
+                    modOut += mModifierOut;
+
+                }
+
                 currentKeyOut = Convert.ToInt32(currentKeyOut.ToString().Substring(1, 1));
             }
             else
             {
-                //if (cbAltToDo.IsChecked.Value) modOut |= EModifiers.Alt;
-                //if (cbControlToDo.IsChecked.Value) modOut |= EModifiers.Ctrl;
-                //if (cbShiftToDo.IsChecked.Value) modOut |= EModifiers.Shift;
-                //if (cbWindowToDo.IsChecked.Value) modOut |= EModifiers.Win;
+  
                 modOut = mModifierOut;
 
             }
 
             HotkeyPair hotkey;
 
-            //else 지움
             hotkey = new HotkeyPair(new HotkeyInfo(currentKeyIn, mModifierIn), new HotkeyInfo(currentKeyOut, modOut));
 
             //TODO : 여기만 이벤트를 등록해서 처리하도록 바꾸면 될 것 같음. 아니면 처리 코드는 여기다 다 써놓고 어떤걸 실행할지를 결정...?
@@ -521,20 +552,8 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnSelectKeyClicked(object sender, RoutedEventArgs e)
         {
-            Button btn = sender as Button;
-
-            mIsSelectingKey = !mIsSelectingKey;
-
-            if (mIsSelectingKey)
-            {
-                btn.Content = "Stop Selceting";
-            }
-            else
-            {
-                btn.Content = "Select Key";
-            }
+            SetSelectKeyOption(!mIsSelectingKey);
         }
-
 
     }
 }

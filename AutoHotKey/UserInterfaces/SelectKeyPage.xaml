@@ -111,7 +111,7 @@
                     />
         </StackPanel>
         <StackPanel
-              Visibility="Hidden"
+              Visibility="Visible"
               HorizontalAlignment="Right"
               Height="358" 
               VerticalAlignment="Center" 
@@ -226,7 +226,7 @@
                 <StackPanel 
                     Orientation="Vertical"
                     HorizontalAlignment="Center"
-                    Margin="81,3,81,0" Height="120" Width="191"
+                    Margin="78,3,78,0" Height="77" Width="192"
                     >
 
                     <Label
@@ -251,18 +251,51 @@
                     <CheckBox
                         x:Name="xCheckBoxIsTogle"
                         Visibility="Collapsed"
-                        Margin="0, 8,0,0"
+                        Margin="0, 0,0,0"
                         HorizontalAlignment="Center" VerticalAlignment="Center">
                         IsTogle
                     </CheckBox>
-                    
+
                     <Button x:Name="xBtnToSelectMode" 
+                        Height="22" 
+                        Width="90"
+                        Content="Select a Key"
+                        Margin="0, 5, 0, 0" Click="OnSelectKeyClicked"
+                        />
+                </StackPanel>
+                <StackPanel 
+                    Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    Margin="81,0,81,0" Height="120" Width="191"
+                    >
+
+                    <Label
+                        Content="Ending Key"
+                        HorizontalContentAlignment="Center"
+                        FontSize="14"
+                        />
+
+                    <TextBox
+                        Name="tbKeySetToDoOnEnding"
+                        MaxLength="1"
+                        MaxLines="1"
+                        MinWidth="50"
+                        Width="Auto"
+                        TextWrapping="Wrap" 
+                        HorizontalAlignment="Center" 
+                        HorizontalContentAlignment="Center"
+                        VerticalAlignment="Center"
+                        PreviewKeyDown = "OnKeyInput"
+                        />
+
+                    <Button
                         Height="22" 
                         Width="90"
                         Content="Select a Key"
                         Margin="0,18, 0, 0" Click="OnSelectKeyClicked"
                         />
                 </StackPanel>
+
             </StackPanel>
             <StackPanel
                 Orientation ="Horizontal"

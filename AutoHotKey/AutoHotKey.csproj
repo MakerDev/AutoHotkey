@@ -64,6 +64,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="MacroControllers\ISettingWindow.cs" />
+    <Compile Include="MacroControllers\HotkeyPair_legacy.cs" />
     <Compile Include="MacroControllers\ScreenKeyboard\ScreenKeyboard.cs" />
     <Compile Include="MacroControllers\ScreenKeyboard\ScreenKeyboardManager.cs" />
     <Compile Include="UserInterfaces\MacroSettingWithPicture.xaml.cs">

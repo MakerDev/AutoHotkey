@@ -247,17 +247,13 @@ namespace AutoHotKey.MacroControllers
 
         public void OnScreenKeyboardOpen()
         {
-            if(mIsHotkeyActivated)
-            {
-                mIsHotkeyActivated = false;
+            mIsHotkeyActivated = false;
 
-                UnRegisterHotKeyInternal();
+            UnRegisterHotKeyInternal();
 
-                RegisterProfileChangingHotkeyInternal();
-                ChangeActiveProfileInternal(-1);
-                mHookController.UnHookKeyboard();
-
-            }
+            RegisterProfileChangingHotkeyInternal();
+            ChangeActiveProfileInternal(-1);
+            mHookController.UnHookKeyboard();
         }
 
         public void OnAllScreenKeyboardClose()

@@ -33,7 +33,7 @@ namespace AutoHotKey.UserInterfaces
         private bool mIsSequencialUndoing = false;
 
         private bool mPreviewKeyWasToggled = false;
-
+        private bool mIsSavedRightBeforeClosing = false;
 
         //0 : Normal, 1 : Hover  2 : Pressed
         //10 : FontNormal, 11 : FontHover, 12 : FontPressed;
@@ -48,7 +48,6 @@ namespace AutoHotKey.UserInterfaces
 
             mCurrentKeyboard = currentKeyboard;
 
-            mKeySelectionPage.LayoutTransform = new ScaleTransform(0.7, 0.7, 0, 0);
             xFrameKeySelector.Content = mKeySelectionPage;
 
             mScreenKeyboardPage = new ScreenKeyboard.ScreenKeyboardPage(ScreenKeyboardManager.GetScreenKeyboard(currentKeyboard));
@@ -72,7 +71,30 @@ namespace AutoHotKey.UserInterfaces
 
             ScreenKeyboardManager.StartEditing();
 
+            SetWindowSizeToResolution();
+
             Closing += OnClosing;
+        }
+
+        private void SetWindowSizeToResolution()
+        {
+
+            int screenWidth = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
+            int windowToWidth = (int)(screenWidth * 0.6);
+
+            //Scaling 정보
+            double scaling = PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice.M11;
+            double ratioToAdjust = windowToWidth / xStackMain.Width / scaling;
+
+            xStackMain.LayoutTransform = new ScaleTransform(ratioToAdjust, ratioToAdjust, 0, 0);
+
+            Width = xStackMain.Width * ratioToAdjust;
+            Height = xStackMain.Height * ratioToAdjust;
+
+            double keySelectorRatio = 0.75;
+
+            mKeySelectionPage.LayoutTransform = new ScaleTransform(keySelectorRatio, keySelectorRatio, 0, 0);
+
         }
 
         private void SetColorOptionView()
@@ -225,7 +247,7 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnKeySelected(object sender, ScreenKey hotkey)
         {
-            if(!mIsAdding && mClickedKey==null)
+            if (!mIsAdding && mClickedKey == null)
             {
                 return;
             }
@@ -274,7 +296,7 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            ScreenKeyboardManager.EndEditing(mCurrentKeyboard);
+            ScreenKeyboardManager.EndEditing(mCurrentKeyboard, mIsSavedRightBeforeClosing);
         }
 
         private void OnOkClicked(object sender, RoutedEventArgs e)
@@ -416,7 +438,9 @@ namespace AutoHotKey.UserInterfaces
             mPreviewKeyWasToggled = false;
             mHotkeyForNewScreenKey = null;
             xBtnUndo.IsEnabled = false;
+            mIsSavedRightBeforeClosing = false;
             mLastStates.Clear();
+            mKeySelectionPage.ClearHotkeySettingOptions();
         }
 
         private void OnNumberChanged(object sender, EventArgs e)
@@ -435,6 +459,7 @@ namespace AutoHotKey.UserInterfaces
         {
             ScreenKeyboardManager.SaveKeyboardInternal(mCurrentKeyboard);
             MessageBox.Show("SAVED");
+            mIsSavedRightBeforeClosing = true;
         }
 
         private void OnUndoClicked(object sender, RoutedEventArgs e)
@@ -445,13 +470,13 @@ namespace AutoHotKey.UserInterfaces
                 mLastStates.Pop();
             }
 
-            if(mLastStates.Peek().Action == null)
+            if (mLastStates.Peek().Action == null)
             {
                 mHotkeyForNewScreenKey = null;
             }
 
             if (mLastStates.Count >= 2)
-            {               
+            {
                 SetOptionsWIthGivenKey(mLastStates.Pop(), true);
             }
             else
@@ -483,6 +508,9 @@ namespace AutoHotKey.UserInterfaces
             }
 
             mIsSequencialUndoing = false;
+
+            //뭔가 변화가 생겨서 상태를 저장한 거니까
+            mIsSavedRightBeforeClosing = false;
         }
     }
 }

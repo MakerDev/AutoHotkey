@@ -112,11 +112,11 @@ namespace AutoHotKey.MacroControllers.ScreenKeyboard
             IsEditing = true;
         }
 
-        public static void EndEditing(int keyboardNum, bool toSave = false)
+        public static void EndEditing(int keyboardNum, bool isSavedRightBeforeClosing = false)
         {
             IsEditing = false;
 
-            if(!toSave)
+            if(!isSavedRightBeforeClosing)
             {
                 if (MessageBox.Show("Do you want to save?", "", MessageBoxButton.YesNo) == MessageBoxResult.No)
                 {

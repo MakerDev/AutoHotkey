@@ -108,7 +108,7 @@ namespace AutoHotKey.UserInterfaces
             }
         }
 
-        //Tag 0는 click이고 Tag 1은 double click tag 2은 down
+        //Tag 1는 click이고 Tag 2은 double click tag 3은 down
         private void OnMouseOptionChanged(object sender, RoutedEventArgs e)
         {
             RadioButton radioButton = sender as RadioButton;

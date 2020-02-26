@@ -64,7 +64,7 @@ namespace AutoHotKey.MacroControllers
             filestream.Close();
 
             return true;
-        }       
+        }
 
         public bool LoadProfile(string name)
         {
@@ -74,12 +74,25 @@ namespace AutoHotKey.MacroControllers
             {
                 FileStream filestream = File.OpenRead(path);
 
-                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(List<HotkeyPair>));
-                hotkeyList = serializer.ReadObject(filestream) as List<HotkeyPair>;
+                try
+                {
+                    DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(List<HotkeyPair>));
+                    hotkeyList = serializer.ReadObject(filestream) as List<HotkeyPair>;
+                }
+                catch (System.Runtime.Serialization.SerializationException)
+                {
+
+                    filestream.Seek(0, SeekOrigin.Begin);  //다시 읽으려고 파일스트림 위치 초기화
+                    DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(List<HotkeyPair_legacy>));
+                    List<HotkeyPair_legacy> hotkeyList_legacy = serializer.ReadObject(filestream) as List<HotkeyPair_legacy>;
+
+                    ConvertLegacyDataIntoNewDataForm(hotkeyList_legacy);
+                }
+
 
                 filestream.Close();
 
-                return true; ;
+                return true; 
             }
             else
             {
@@ -107,6 +120,20 @@ namespace AutoHotKey.MacroControllers
 
         public void SetChangeKey(HotkeyInfo newChangeKey)
         {
+
+        }
+
+        private void ConvertLegacyDataIntoNewDataForm(List<HotkeyPair_legacy> hotkeyList_Legacies)
+        {
+            int length = hotkeyList_Legacies.Count;
+
+            for(int i=0; i<length; i++)
+            {
+                HotkeyPair pair = new HotkeyPair(hotkeyList_Legacies[i].Trigger, hotkeyList_Legacies[i].Action);
+                pair.Explanation = hotkeyList_Legacies[i].Explanation;
+
+                hotkeyList.Add(pair);
+            }
 
         }
 

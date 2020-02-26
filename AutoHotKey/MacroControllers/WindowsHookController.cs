@@ -6,12 +6,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Interop;
+using WindowsInput.Native;
 
 namespace AutoHotKey.MacroControllers
 {
     public enum EMouseEvents
     {
-        Click = 0,
+        Click = 1,
         DoubleClick,
         Down
     }
@@ -55,12 +56,15 @@ namespace AutoHotKey.MacroControllers
         public int Button { get; private set; } //어느 버튼인지
         public EMouseEvents MouseEvent { get; private set; } //만약 KeyUp이면 True, Down이면 false
         public bool IsUp { get; private set; } //Down이벤트인지 UP이벤트인지
+        public int Modifier;
 
-        public MouseEventArgs(int button, EMouseEvents mouseEvent, bool isUp)
+
+        public MouseEventArgs(int button, EMouseEvents mouseEvent, bool isUp, int mod)
         {
             this.Button = button;
             this.MouseEvent = mouseEvent;
             this.IsUp = isUp;
+            this.Modifier = mod;
         }
     }
 
@@ -158,7 +162,7 @@ namespace AutoHotKey.MacroControllers
             if ((mod & EModifiers.Ctrl) != 0 && !mModifiersState.ContainsKey(EModifiers.Ctrl)) { mModifiersState.Add(EModifiers.Ctrl, false); }
             if ((mod & EModifiers.Shift) != 0) { if (mModifiersState.ContainsKey(EModifiers.Shift)) mModifiersState.Add(EModifiers.Shift, false); }
             if ((mod & EModifiers.Alt) != 0) { if (mModifiersState.ContainsKey(EModifiers.Alt)) mModifiersState.Add(EModifiers.Alt, false); }
-            if ((mod & EModifiers.Win) != 0) { if (mModifiersState.ContainsKey(EModifiers.Win)) mModifiersState.Add(EModifiers.Win, false); }          
+            if ((mod & EModifiers.Win) != 0) { if (mModifiersState.ContainsKey(EModifiers.Win)) mModifiersState.Add(EModifiers.Win, false); }
         }
 
         //mKeyEventPair에서 info가 둘 다 -1이면 스위칭 키로 간주함
@@ -224,7 +228,7 @@ namespace AutoHotKey.MacroControllers
                 //만약 ctrl, alt등의 modifier키 중 하나이면
                 //TODO : 조합키 사용시, ctrl, alt등의 키는 단일키 입력으로 매핑 못하게 하기
                 //modifier키는 어느 쪽 키인지 구분이 필요하다
-                if(mModifiersState.ContainsKey(modMaybe))
+                if (mModifiersState.ContainsKey(modMaybe))
                 {
                     //최초 1회만 더함
                     if (mModifiersState[modMaybe] == false)
@@ -267,12 +271,20 @@ namespace AutoHotKey.MacroControllers
                     }
                     else if (key >= 1 && key <= 4)
                     {
-                        //여기서 modifier는 반드시 0, 1, 2여야 한다.
-                        OnMouseEventHookOccur(new MouseEventArgs(key, (EMouseEvents)mod, false));
+
+                        //modOut이 ctrl 이런거고 mod가 클릭인지 더블클릭인지
+                        int mouseEventMod = mod / 100;
+                        int modOut = mod - mouseEventMod * 100;
+
+                        //mod = Convert.ToInt32(mod.ToString().Substring(0, 1));
+
+
+                        //여기서 modifier는 반드시 1, 2, 3여야 한다.
+                        OnMouseEventHookOccur(new MouseEventArgs(key, (EMouseEvents)mouseEventMod, false, modOut));
                     }
                     else
                     {
-                        if(mModifier != 0)
+                        if (mModifier != 0)
                         {
                             mLastInput = new HotkeyInfo(currentHotkey.Key, currentHotkey.Modifier);
                         }
@@ -305,7 +317,7 @@ namespace AutoHotKey.MacroControllers
                 //만약 ctrl, alt등의 modifier키 중 하나이면
                 if (mModifiersState.ContainsKey(vkCode))
                 {
-                    if(mModifiersState[vkCode] == true)
+                    if (mModifiersState[vkCode] == true)
                     {
                         mModifier -= vkCode;
                     }
@@ -313,7 +325,7 @@ namespace AutoHotKey.MacroControllers
                     mModifiersState[vkCode] = false;
 
                     //만약 뗴는 키가 마지막 인풋의 조합키 중 하나가 아닐 때만.
-                    if (mLastInput!=null && (mLastInput.Modifier & vkCode) == 0)
+                    if (mLastInput != null && (mLastInput.Modifier & vkCode) == 0)
                     {
                         return CallNextHookEx(mHookID, nCode, wParam, lParam);
                     }
@@ -334,17 +346,24 @@ namespace AutoHotKey.MacroControllers
                     //마우스는 입력으로 사용되지 않으므로 연쇄에 대한 걱정을 할 필요가 없다
                     if (key >= 1 && key <= 4)
                     {
-                        //여기서 modifier는 반드시 0, 1, 2여야 한다.
-                        OnMouseEventHookOccur(new MouseEventArgs(key, (EMouseEvents)mod, true));
+                        //modOut이 ctrl 이런거고 mod가 클릭인지 더블클릭인지
+                        int mouseEventMod = mod / 100;
+                        int modOut = mod - mouseEventMod*100;
+                        
+                        //mod = Convert.ToInt32(mod.ToString().Substring(0, 1));
+
+
+                        //여기서 modifier는 반드시 1, 2, 3여야 한다.
+                        OnMouseEventHookOccur(new MouseEventArgs(key, (EMouseEvents)mouseEventMod, true, modOut));
                     }
                     else
                     {
                         //조합키를 떼면
-                        if(currentHotkey.Modifier != 0)
+                        if (currentHotkey.Modifier != 0)
                         {
                             mLastInput = null;
 
-                            HotkeyInfo toUp = new HotkeyInfo(key, mod-mModifier);
+                            HotkeyInfo toUp = new HotkeyInfo(key, mod - mModifier);
 
                             //기존데이터의 변질을 막기 위해.
                             mLastHotkeyUp = new HotkeyInfo(key, mod - mModifier);
@@ -372,15 +391,42 @@ namespace AutoHotKey.MacroControllers
 
         }
 
+
+        private void UpModifiersInternal(List<VirtualKeyCode> modifiers)
+        {
+
+            WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
+
+            foreach (var todoMod in modifiers)
+            {
+                inputSimulator.Keyboard.KeyUp(todoMod);
+            }
+        }
+
+
         private void OnMouseEventHookOccur(MouseEventArgs e)
         {
+
+
+            List<VirtualKeyCode> modifiers = new List<VirtualKeyCode>();
+
+            if ((e.Modifier & EModifiers.Ctrl) != 0) { modifiers.Add(VirtualKeyCode.CONTROL); }
+            if ((e.Modifier & EModifiers.Shift) != 0) { modifiers.Add(VirtualKeyCode.SHIFT); }
+            if ((e.Modifier & EModifiers.Alt) != 0) { modifiers.Add(VirtualKeyCode.MENU); }
+            if ((e.Modifier & EModifiers.Win) != 0) { modifiers.Add(VirtualKeyCode.LWIN); }
+
+
+
+
             if (e.IsUp)
             {
+                WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
+
+
                 //Down으로 설정되지 않는 것들은 up이벤트에 반응할 필요가 없다.
                 if (e.MouseEvent != EMouseEvents.Down)
                     return;
 
-                WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
 
                 switch (e.Button)
                 {
@@ -402,10 +448,23 @@ namespace AutoHotKey.MacroControllers
                     default:
                         break;
                 }
+
+                UpModifiersInternal(modifiers);
+       
             }
             else
             {
                 WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
+
+                if (e.Modifier > 0)
+                {
+                    foreach (var todoMod in modifiers)
+                    {                     
+                        inputSimulator.Keyboard.KeyDown(todoMod);
+
+                    }
+                }
+
                 EMouseEvents mouseEvent = e.MouseEvent;
                 switch (e.MouseEvent)
                 {
@@ -415,6 +474,8 @@ namespace AutoHotKey.MacroControllers
                         if (e.Button == 2) { inputSimulator.Mouse.RightButtonClick(); }
                         if (e.Button == 4) { inputSimulator.Mouse.MiddleButtonClick(); }
 
+                        UpModifiersInternal(modifiers);
+
                         break;
 
                     //Right
@@ -422,6 +483,8 @@ namespace AutoHotKey.MacroControllers
                         if (e.Button == 1) { inputSimulator.Mouse.LeftButtonDoubleClick(); }
                         if (e.Button == 2) { inputSimulator.Mouse.RightButtonDoubleClick(); }
                         if (e.Button == 4) { inputSimulator.Mouse.MiddleButtonDoubleClick(); }
+
+                        UpModifiersInternal(modifiers);
 
                         break;
 
@@ -433,9 +496,11 @@ namespace AutoHotKey.MacroControllers
 
                         break;
 
+
                     default:
                         break;
                 }
+
 
             }
 

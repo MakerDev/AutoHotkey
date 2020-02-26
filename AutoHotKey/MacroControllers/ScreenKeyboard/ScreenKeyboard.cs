@@ -12,11 +12,11 @@ namespace AutoHotKey.MacroControllers.ScreenKeyboard
     public class ScreenKey : ICloneable
     {
         [NonSerialized]
-        public static readonly Color DefaultColor = Color.FromArgb(255, 80, 80, 80);
+        public static readonly Color DefaultColor = Color.FromArgb(255, 51, 51, 51);
         [NonSerialized]
         public static readonly Color DefaultFontColor = Color.FromArgb(255, 255, 255, 255);
         [NonSerialized]
-        public static readonly Color DefaultTogleKeyColor = Color.FromArgb(255, 150, 150, 150);
+        public static readonly Color DefaultTogleKeyColor = Color.FromArgb(255, 131, 131, 131);
 
         [NonSerialized]
         public static readonly Color DefaultHoverColor = Color.FromArgb(255, 210, 210, 210);
@@ -24,9 +24,9 @@ namespace AutoHotKey.MacroControllers.ScreenKeyboard
         public static readonly Color DefaultHoverFontColor = Color.FromArgb(255, 0, 0, 0);
 
         [NonSerialized]
-        public static readonly Color DefaultPressedColor = Color.FromArgb(255, 100, 100, 100);
+        public static readonly Color DefaultPressedColor = Color.FromArgb(255, 00, 118, 215);
         [NonSerialized]
-        public static readonly Color DefaultPressedFontColor = Color.FromArgb(255, 200, 200, 200);
+        public static readonly Color DefaultPressedFontColor = Color.FromArgb(255, 255, 255, 255);
 
         public Point Location = new Point(0, 0);
         public string Label = "";

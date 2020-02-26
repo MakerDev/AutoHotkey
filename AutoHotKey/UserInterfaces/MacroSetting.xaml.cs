@@ -315,7 +315,6 @@ namespace AutoHotKey.UserInterfaces
 
             HotkeyPair hotkey;
 
-            //else 지움
             hotkey = new HotkeyPair(new HotkeyInfo(currentKeyIn, modIn), new HotkeyInfo(currentKeyOut, modOut));
             
 
