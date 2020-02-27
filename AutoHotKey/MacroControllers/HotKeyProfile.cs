@@ -130,6 +130,13 @@ namespace AutoHotKey.MacroControllers
             for(int i=0; i<length; i++)
             {
                 HotkeyPair pair = new HotkeyPair(hotkeyList_Legacies[i].Trigger, hotkeyList_Legacies[i].Action);
+                
+                //마우스 문제 해결
+                if(pair.Action.Key >= 1 && pair.Action.Key <= 4)
+                {
+                    pair.Action.Modifier = (pair.Action.Modifier + 1) * 100;
+                }
+
                 pair.Explanation = hotkeyList_Legacies[i].Explanation;
 
                 hotkeyList.Add(pair);

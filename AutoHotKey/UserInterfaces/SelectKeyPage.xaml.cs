@@ -250,6 +250,7 @@ namespace AutoHotKey.UserInterfaces
 
 
             tbKeySetToDo.Text = "";
+            tbKeySetToDoOnEnding.Text = "";
 
             currentKeyIn = 0;
             currentKeyOut = 0;

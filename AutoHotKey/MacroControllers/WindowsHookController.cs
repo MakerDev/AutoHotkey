@@ -255,7 +255,8 @@ namespace AutoHotKey.MacroControllers
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
                 }
 
-                HotkeyInfo currentHotkey = new HotkeyInfo(vkCode, mModifier);
+                //HotkeyInfo currentHotkey = new HotkeyInfo(vkCode, mModifier);
+                HotkeyInfo currentHotkey = new HotkeyInfo(vkCode, 0);
 
                 int key = mKeyEventPairs[currentHotkey].Action.Key;
                 int mod = mKeyEventPairs[currentHotkey].Action.Modifier;
@@ -313,11 +314,11 @@ namespace AutoHotKey.MacroControllers
             }
             else if (nCode >= 0 && (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP))
             {
-                int vkCode = Marshal.ReadInt32(lParam);
-
-                HotkeyInfo currentHotkey = new HotkeyInfo(vkCode, 0);
+                int vkCode = Marshal.ReadInt32(lParam);           
 
                 vkCode = KeycodeToModifier(vkCode);
+
+                HotkeyInfo currentHotkey = new HotkeyInfo(vkCode, 0);
 
                 //ctrl a 등에서 a를 먼저 뗀 경우에는
                 //Modifier키는 그대로 down상태로 두고 

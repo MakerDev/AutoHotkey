@@ -490,6 +490,8 @@ namespace AutoHotKey.MacroControllers
             if (profileNum <= 0)
                 return;
 
+            var helper = new WindowInteropHelper(mHelper);
+
             //프로필 등록과 동시에
 
             //프로필이 없으면 등록하지 않는다.
@@ -610,10 +612,6 @@ namespace AutoHotKey.MacroControllers
             if ((todoMod & EModifiers.Shift) != 0) { modifiers.Add(VirtualKeyCode.SHIFT); }
             if ((todoMod & EModifiers.Alt) != 0) { modifiers.Add(VirtualKeyCode.MENU); }
             if ((todoMod & EModifiers.Win) != 0) { modifiers.Add(VirtualKeyCode.LWIN); }
-
-
-            //TODO : 키 다운이나 업을 할 때 잠시 훅을 껐다켜는 방법으로 중복이나 연쇄문제를 해결 가능한지 테스트 -> 가능해보임
-            //어느쪽을 눌렀는지 구분 필요
 
             mHookController.UnHookKeyboard();
 

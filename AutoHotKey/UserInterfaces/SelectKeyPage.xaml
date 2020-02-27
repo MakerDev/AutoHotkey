@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:AutoHotKey.UserInterfaces"
       mc:Ignorable="d" 
-      Width="auto" Height="453.5"
+      Width="auto" Height="auto"
       Title="SelectKeyPage" Background="White" RenderTransformOrigin="0.5,0.5">
 
     <Page.Resources>
@@ -267,7 +267,7 @@
                     Name="xLabelEndingKeyAvailability"
                     HorizontalContentAlignment="Center"
                     Visibility="Visible"
-                    Margin="0, 40, 0, 30"
+                    Margin="0, 40, 0, 10"
                     Content="[Ending Key]" FontSize="22"
                  />
                 <StackPanel 
@@ -275,7 +275,7 @@
                     Visibility="Visible"
                     Orientation="Vertical"
                     HorizontalAlignment="Center"
-                    Margin="81,0,81,0" Height="120" Width="191"
+                    Margin="81,0,81,0" Height="auto" Width="191"
                     >
 
                     <Label
@@ -299,7 +299,7 @@
 
                     <Button
                         Name="btnSelectEndKey"
-                        Visibility="Hidden"
+                        Visibility="Collapsed"
                         Height="22" 
                         Width="90"
                         Content="Select a Key"
