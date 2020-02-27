@@ -26,14 +26,18 @@ namespace AutoHotKey.MacroControllers
         public HotkeyInfo In { get; private set; } //이벤트 발생시킨 키
         public HotkeyInfo Out { get; private set; } //이벤트 내용;
 
+        public HotkeyInfo EndingKey { get; private set; }
+
         public bool IsUp { get; private set; } //만약 KeyUp이면 True, Down이면 false
         public HotkeyInfo ToUp { get; private set; }  //upKey는 조합키를 뗄 떼를 위한 키코드. -1이면 무시
-        public KeyEventArgs(HotkeyInfo input, HotkeyInfo output, bool isUp, HotkeyInfo toUp = null)
+        public KeyEventArgs(HotkeyInfo input, HotkeyInfo output, bool isUp,  HotkeyInfo endingKey, HotkeyInfo toUp = null)
         {
             In = input;
             IsUp = isUp;
             Out = output;
             ToUp = toUp;
+
+            EndingKey = endingKey;
         }
     }
 
@@ -120,7 +124,7 @@ namespace AutoHotKey.MacroControllers
         //Z=Shift처럼 특수키로 매핑되어있어 입력을 무시해야 하는 키들
         //이 리스트에 있는 키들이 눌리면 이벤트를 발생시키고 입력을 무시함
         //구현은 리스트에 없으면 바로 훅 함수를 정상적으로 리턴해버리는 식으로 구현해도 될 듯.
-        private Dictionary<HotkeyInfo, HotkeyInfo> mKeyEventPairs = new Dictionary<HotkeyInfo, HotkeyInfo>();
+        private Dictionary<HotkeyInfo, HotkeyPair> mKeyEventPairs = new Dictionary<HotkeyInfo, HotkeyPair>();
         private Dictionary<HotkeyInfo, bool> mIsPressedAlready = new Dictionary<HotkeyInfo, bool>(); //이 키가 최초로 눌러진건지 판정하기 위함.
 
         private Dictionary<int, bool> mModifiersState = new Dictionary<int, bool>();
@@ -152,7 +156,7 @@ namespace AutoHotKey.MacroControllers
         }
 
         //입력키와 출력키 입력
-        public void AddNewKey(HotkeyInfo newKey, HotkeyInfo info)
+        public void AddNewKey(HotkeyInfo newKey, HotkeyPair info)
         {
             mKeyEventPairs.Add(newKey, info);
             mIsPressedAlready.Add(newKey, false);
@@ -170,7 +174,9 @@ namespace AutoHotKey.MacroControllers
         {
             //TODO : 추후에 조합키를 입력키로 하는게 가능해 지면 HotkeyInfo전체를 쓰기
             //콜백이벤트의 인자로 전달되는 HotkeyInfo의 경우 key의 정보를 HotkeyInfo 형식으로 생성하여 넘김
-            mKeyEventPairs.Add(trigger, new HotkeyInfo(-2, -2));
+            //mKeyEventPairs.Add(trigger, new HotkeyInfo(-2, -2));        
+
+            mKeyEventPairs.Add(trigger, new HotkeyPair(null, new HotkeyInfo(-2, -2), null));
             mIsPressedAlready.Add(trigger, false);
         }
 
@@ -251,18 +257,19 @@ namespace AutoHotKey.MacroControllers
 
                 HotkeyInfo currentHotkey = new HotkeyInfo(vkCode, mModifier);
 
+                int key = mKeyEventPairs[currentHotkey].Action.Key;
+                int mod = mKeyEventPairs[currentHotkey].Action.Modifier;
+
+
                 //이미 한번 눌러졌으면 이벤트 발생X, 그냥 입력 무시 단, z=shift와 마우스 이벤트 같은 특수키에만 해당
                 //0은 shift 같은 키가 출력인 애들이고 1, 2, 4,는 마우스 이므로 1이상 4이하로 설정
-                if (mIsPressedAlready[currentHotkey] && (mKeyEventPairs[currentHotkey].Key >= 1 && mKeyEventPairs[currentHotkey].Key <= 4))
+                if (mIsPressedAlready[currentHotkey] && (key >= 1 && key <= 4))
                 {
                     return new IntPtr(5);
                 }
 
                 if (OnKeyEvent != null)
                 {
-                    int key = mKeyEventPairs[currentHotkey].Key;
-                    int mod = mKeyEventPairs[currentHotkey].Modifier;
-
                     //스위칭 키인 경우
                     if (key == -2 && mod == -2)
                     {
@@ -294,7 +301,7 @@ namespace AutoHotKey.MacroControllers
                         }
 
 
-                        OnKeyEvent(this, new KeyEventArgs(currentHotkey, mKeyEventPairs[currentHotkey], false));
+                        OnKeyEvent(this, new KeyEventArgs(currentHotkey, mKeyEventPairs[currentHotkey].Action, false, mKeyEventPairs[currentHotkey].EndingAction));
                     }
                 }
 
@@ -308,11 +315,13 @@ namespace AutoHotKey.MacroControllers
             {
                 int vkCode = Marshal.ReadInt32(lParam);
 
+                HotkeyInfo currentHotkey = new HotkeyInfo(vkCode, 0);
+
                 vkCode = KeycodeToModifier(vkCode);
 
                 //ctrl a 등에서 a를 먼저 뗀 경우에는
                 //Modifier키는 그대로 down상태로 두고 
-                HotkeyInfo currentHotkey = new HotkeyInfo(vkCode, mModifier);
+                //HotkeyInfo currentHotkey = new HotkeyInfo(vkCode, mModifier);
 
                 //만약 ctrl, alt등의 modifier키 중 하나이면
                 if (mModifiersState.ContainsKey(vkCode))
@@ -337,11 +346,10 @@ namespace AutoHotKey.MacroControllers
                 if (!mKeyEventPairs.ContainsKey(currentHotkey))
                     return CallNextHookEx(mHookID, nCode, wParam, lParam);
 
-
                 if (OnKeyEvent != null)
                 {
-                    int key = mKeyEventPairs[currentHotkey].Key;
-                    int mod = mKeyEventPairs[currentHotkey].Modifier;
+                    int key = mKeyEventPairs[currentHotkey].Action.Key;
+                    int mod = mKeyEventPairs[currentHotkey].Action.Modifier;
 
                     //마우스는 입력으로 사용되지 않으므로 연쇄에 대한 걱정을 할 필요가 없다
                     if (key >= 1 && key <= 4)
@@ -350,10 +358,6 @@ namespace AutoHotKey.MacroControllers
                         int mouseEventMod = mod / 100;
                         int modOut = mod - mouseEventMod*100;
                         
-                        //mod = Convert.ToInt32(mod.ToString().Substring(0, 1));
-
-
-                        //여기서 modifier는 반드시 1, 2, 3여야 한다.
                         OnMouseEventHookOccur(new MouseEventArgs(key, (EMouseEvents)mouseEventMod, true, modOut));
                     }
                     else
@@ -368,14 +372,14 @@ namespace AutoHotKey.MacroControllers
                             //기존데이터의 변질을 막기 위해.
                             mLastHotkeyUp = new HotkeyInfo(key, mod - mModifier);
 
-                            OnKeyEvent(this, new KeyEventArgs(currentHotkey, mKeyEventPairs[currentHotkey], true, toUp));
+                            OnKeyEvent(this, new KeyEventArgs(currentHotkey, mKeyEventPairs[currentHotkey].Action, true, mKeyEventPairs[currentHotkey].EndingAction, toUp));
                         }
                         else
                         {
                             //기존데이터의 변질을 막기 위해.
                             mLastHotkeyUp = new HotkeyInfo(key, mod);
 
-                            OnKeyEvent(this, new KeyEventArgs(currentHotkey, mKeyEventPairs[currentHotkey], true));
+                            OnKeyEvent(this, new KeyEventArgs(currentHotkey, mKeyEventPairs[currentHotkey].Action, true, mKeyEventPairs[currentHotkey].EndingAction));
                         }
 
                     }
@@ -392,16 +396,7 @@ namespace AutoHotKey.MacroControllers
         }
 
 
-        private void UpModifiersInternal(List<VirtualKeyCode> modifiers)
-        {
 
-            WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
-
-            foreach (var todoMod in modifiers)
-            {
-                inputSimulator.Keyboard.KeyUp(todoMod);
-            }
-        }
 
 
         private void OnMouseEventHookOccur(MouseEventArgs e)
@@ -420,13 +415,11 @@ namespace AutoHotKey.MacroControllers
 
             if (e.IsUp)
             {
-                WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
-
-
                 //Down으로 설정되지 않는 것들은 up이벤트에 반응할 필요가 없다.
                 if (e.MouseEvent != EMouseEvents.Down)
                     return;
 
+                WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
 
                 switch (e.Button)
                 {
@@ -505,6 +498,17 @@ namespace AutoHotKey.MacroControllers
             }
 
 
+        }
+
+        private void UpModifiersInternal(List<VirtualKeyCode> modifiers)
+        {
+
+            WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
+
+            foreach (var todoMod in modifiers)
+            {
+                inputSimulator.Keyboard.KeyUp(todoMod);
+            }
         }
 
     }

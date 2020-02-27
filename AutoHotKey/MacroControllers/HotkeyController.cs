@@ -490,9 +490,6 @@ namespace AutoHotKey.MacroControllers
             if (profileNum <= 0)
                 return;
 
-
-            var helper = new WindowInteropHelper(mHelper);
-
             //프로필 등록과 동시에
 
             //프로필이 없으면 등록하지 않는다.
@@ -502,9 +499,6 @@ namespace AutoHotKey.MacroControllers
             }
 
             List<HotkeyPair> list = mProfiles.ElementAt(profileNum - 1).GetHotkeyList();
-
-            //새로 핫 키들을 등록하는 것이므로 딕셔너리를 한 번 비워준다. -> 프로필 변경키를 위해 비우지 않는다. UnHookKeyboard에서 이미 비움.
-            //mHookController.ClearKeys();
 
             foreach (var hotkey in list)
             {
@@ -517,13 +511,20 @@ namespace AutoHotKey.MacroControllers
                 if (mod == 0)
                 {
                     Debug.WriteLine("스페셜키 : " + vk.ToString());
-                    HotkeyInfo info = new HotkeyInfo(hotkey.Action.Key, hotkey.Action.Modifier);
+
+                    HotkeyInfo action = new HotkeyInfo(hotkey.Action.Key, hotkey.Action.Modifier);
+                    HotkeyPair info = new HotkeyPair(null, action, hotkey.EndingAction);
+
                     mHookController.AddNewKey(new HotkeyInfo(vk, mod), info);
                 }
+                //혹시라도 조합키로 인풋을 쓰는 경우를 위함
                 else
                 {
                     HotkeyInfo input = new HotkeyInfo(vk, mod);
-                    HotkeyInfo info = new HotkeyInfo(hotkey.Action.Key, hotkey.Action.Modifier);
+
+                    HotkeyInfo action = new HotkeyInfo(hotkey.Action.Key, hotkey.Action.Modifier);
+                    HotkeyPair info = new HotkeyPair(null, action, hotkey.EndingAction);
+
                     Debug.WriteLine("조합키 : " + input.ToString());
                     mHookController.AddNewKey(input, info);
 
@@ -531,9 +532,6 @@ namespace AutoHotKey.MacroControllers
             }
 
             mIsHotkeyRegisterd = true;
-
-            //중복훅 등록 문제가 있는 듯함. 이미 프로필 변경키를 등록하며 훅을 실행했으니 여기서는 키만 추가한다
-            //mHookController.HookKeyboard();
         }
 
         //TODO : 나중에 후킹 및 핫 키 등록 등의 윈도우 메시지 관련 함수들을 따로 클래스를 만들어 정리하는 것을 고려한다.
@@ -651,6 +649,12 @@ namespace AutoHotKey.MacroControllers
                     {
                         inputSimulator.Keyboard.KeyUp(todoModifier);
                     }
+                }
+
+
+                if(keyEventArgs.EndingKey != null && keyEventArgs.EndingKey.Key > 0)
+                {
+                    inputSimulator.Keyboard.KeyPress((VirtualKeyCode)keyEventArgs.EndingKey.Key);
                 }
             }
 

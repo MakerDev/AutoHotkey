@@ -30,6 +30,8 @@ namespace AutoHotKey.UserInterfaces
 
         private int currentKeyIn = 0;
         private int currentKeyOut = 0;
+        private int currentEndingKey = 0;
+
         private int mCurrentHotkeySelected = 0; //현재 버튼에 의해 눌린 핫키코드
         private int currentProfile;
         private bool mIsSelectingKey = false;
@@ -75,12 +77,20 @@ namespace AutoHotKey.UserInterfaces
                 if (currentKeyOut < 0)
                 {
                     tbKeySetToDo.Text = GetMouseEventExplanation(currentKeyOut);
+
+                    sEndingKeySettingStack.Visibility = Visibility.Collapsed;
+                    xLabelEndingKeyAvailability.Visibility = Visibility.Visible;
+
                     //xStackModifierSetter.Visibility = Visibility.Collapsed;
                     //xLabelNoModifier.Visibility = Visibility.Visible;
                 }
                 else
                 {
                     tbKeySetToDo.Text = KeyInterop.KeyFromVirtualKey(currentKeyOut).ToString();
+
+                    sEndingKeySettingStack.Visibility = Visibility.Visible;
+                    xLabelEndingKeyAvailability.Visibility = Visibility.Collapsed;
+
                     //xStackModifierSetter.Visibility = Visibility.Visible;
                     //xLabelNoModifier.Visibility = Visibility.Collapsed;
 
@@ -180,7 +190,7 @@ namespace AutoHotKey.UserInterfaces
 
         private void SetWindowSizeToResolution()
         {
-            if(currentProfile < 0)
+            if (currentProfile < 0)
             {
                 return;
             }
@@ -235,10 +245,15 @@ namespace AutoHotKey.UserInterfaces
             xStackModifierSetter.Visibility = Visibility.Visible;
             xLabelNoModifier.Visibility = Visibility.Collapsed;
 
+            xLabelEndingKeyAvailability.Visibility = Visibility.Visible;
+            sEndingKeySettingStack.Visibility = Visibility.Collapsed;
+
+
             tbKeySetToDo.Text = "";
 
             currentKeyIn = 0;
             currentKeyOut = 0;
+            currentEndingKey = 0;
 
             mModifierIn = 0;
             mModifierOut = 0;
@@ -257,7 +272,7 @@ namespace AutoHotKey.UserInterfaces
             int keycode = Convert.ToInt32(name.Substring(4));
             mCurrentHotkeySelected = keycode;
 
-
+            //TODO : 어떤 select key인지 구분하고, 동시에 select키 두 개가 작동하지 않도록 하기
             if (mIsSelectingKey)
             {
                 tbKeySetToDo.Text = KeyInterop.KeyFromVirtualKey(keycode).ToString();
@@ -265,12 +280,16 @@ namespace AutoHotKey.UserInterfaces
 
                 xStackModifierSetter.Visibility = Visibility.Visible;
                 xLabelNoModifier.Visibility = Visibility.Collapsed;
+                sEndingKeySettingStack.Visibility = Visibility.Visible;
+                xLabelEndingKeyAvailability.Visibility = Visibility.Collapsed;
 
                 //현재는 출력 값을 선택하기 위해 버튼을 누르는 것이므로 현재 버튼은 그대로 유지되어야 하기 때문
                 return;
             }
 
             int indexOfHotkey = GetHotkeyIndexByKeycode(keycode, mHotkeyList);
+
+            string tempColor = Brushes.Black.ToString();
 
             if (indexOfHotkey != -1)
             {
@@ -279,25 +298,25 @@ namespace AutoHotKey.UserInterfaces
                 //TODO : 조합키 표시 때문에
                 labelCurrentHotkey.Content = currentHotkey.Trigger.ToString();
 
-                labelCurrentToDo.Text = currentHotkey.Action.ToString();
+                string todoText = currentHotkey.Action.ToString();
+
+                if(currentHotkey.EndingAction != null && currentHotkey.EndingAction.Key > 0)
+                {
+                    todoText += " | Ending Key : ";
+                    todoText += currentHotkey.EndingAction.ToString();
+                }
+
+                labelCurrentToDo.Text = todoText;
 
                 xTextBoxExplanation.Text = HotKeyController.Instance.GetHotKeyFromIndex(indexOfHotkey).Explanation;
 
                 sHotKeyClicked.Visibility = Visibility.Visible;
                 sHotKeySetting.Visibility = Visibility.Hidden;
-
-                if (mBtnCurrentSelected != null && mBtnColorBefore != null)
-                {
-                    SetButtonColor(mBtnCurrentSelected, mBtnColorBefore);
-                }
-
-                mBtnColorBefore = tempCurrentButton.Background.ToString();
-
-                SetButtonColor(tempCurrentButton, "#FF0080FF");
             }
             else
             {
                 //TODO : 설명을 태그로 바꾸는 걸 고려
+                tempColor = Brushes.White.ToString();
 
                 currentKeyIn = mCurrentHotkeySelected;
                 //xLableCurrnetIn.Content = KeyInterop.KeyFromVirtualKey(currentKeyIn).ToString();
@@ -306,8 +325,19 @@ namespace AutoHotKey.UserInterfaces
                 sHotKeySetting.Visibility = Visibility.Visible;
             }
 
+            SetButtonColor(tempCurrentButton, "#FF0080FF");
+
+            if(mBtnCurrentSelected != null && mBtnCurrentSelected != tempCurrentButton)
+            {
+                if(mBtnColorBefore != null)
+                {
+                    SetButtonColor(mBtnCurrentSelected, mBtnColorBefore);
+                }
+
+            }
 
             mBtnCurrentSelected = tempCurrentButton;
+            mBtnColorBefore = tempColor;
         }
 
         //keycode로 버튼 찾기
@@ -420,7 +450,6 @@ namespace AutoHotKey.UserInterfaces
 
         private void OnOkClicked(object sender, RoutedEventArgs e)
         {
-            //마우스 키는 modifier의 영향을 받지 않음
             if (currentKeyOut >= 0)
             {
                 //출력에서는 아무것도 체크하지 않은 것은 부정한 것으로 판단.
@@ -451,15 +480,11 @@ namespace AutoHotKey.UserInterfaces
             //입력은 반드시 단일키
             int modOut = EModifiers.NoMod;
 
-            
+            //마우스인 경우의 처리
             if (currentKeyOut < 0)
-            {
-                //마우스인 경우의 처리
-
+            {              
                 modOut = Convert.ToInt32(currentKeyOut.ToString().Substring(2, 1));
                 modOut *= 100;
-
-                
 
                 //modifier의 최대크기가 0x0008로 한 자리 수이니 100배한 click, down여부를 더하면 정보가 섞이지 않는다.
                 if (mModifierOut > 0)
@@ -472,14 +497,22 @@ namespace AutoHotKey.UserInterfaces
             }
             else
             {
-  
+
                 modOut = mModifierOut;
 
             }
 
+
             HotkeyPair hotkey;
 
-            hotkey = new HotkeyPair(new HotkeyInfo(currentKeyIn, mModifierIn), new HotkeyInfo(currentKeyOut, modOut));
+            HotkeyInfo endingKey = null;
+
+            if(currentEndingKey != 0)
+            {
+                endingKey = new HotkeyInfo(currentEndingKey, EModifiers.NoMod);
+            }
+
+            hotkey = new HotkeyPair(new HotkeyInfo(currentKeyIn, mModifierIn), new HotkeyInfo(currentKeyOut, modOut), endingKey);
 
             //TODO : 여기만 이벤트를 등록해서 처리하도록 바꾸면 될 것 같음. 아니면 처리 코드는 여기다 다 써놓고 어떤걸 실행할지를 결정...?
             if (currentProfile >= 0)
@@ -521,6 +554,13 @@ namespace AutoHotKey.UserInterfaces
 
                 xStackModifierSetter.Visibility = Visibility.Visible;
                 xLabelNoModifier.Visibility = Visibility.Collapsed;
+
+                xLabelEndingKeyAvailability.Visibility = Visibility.Collapsed;
+                sEndingKeySettingStack.Visibility = Visibility.Visible;
+            }
+            else if (ReferenceEquals(sender, tbKeySetToDoOnEnding))
+            {
+                currentEndingKey = int.Parse(KeyInterop.VirtualKeyFromKey(e.Key).ToString());
             }
         }
 

@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:AutoHotKey.UserInterfaces"
       mc:Ignorable="d" 
-      Width="auto" Height="auto"
+      Width="auto" Height="453.5"
       Title="SelectKeyPage" Background="White" RenderTransformOrigin="0.5,0.5">
 
     <Page.Resources>
@@ -111,12 +111,12 @@
                     />
         </StackPanel>
         <StackPanel
-              Visibility="Visible"
+              Visibility="Hidden"
               HorizontalAlignment="Right"
-              Height="358" 
+              Height="415" 
               VerticalAlignment="Center" 
               Width="348"
-              Name="sHotKeySetting" Margin="0,-18,10,10" RenderTransformOrigin="0.5,0.5">
+              Name="sHotKeySetting" Margin="0,-100,10,-47" RenderTransformOrigin="0.5,0.5">
             <StackPanel.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform ScaleY="1" ScaleX="1"/>
@@ -263,7 +263,16 @@
                         Margin="0, 5, 0, 0" Click="OnSelectKeyClicked"
                         />
                 </StackPanel>
+                <Label 
+                    Name="xLabelEndingKeyAvailability"
+                    HorizontalContentAlignment="Center"
+                    Visibility="Visible"
+                    Margin="0, 40, 0, 30"
+                    Content="[Ending Key]" FontSize="22"
+                 />
                 <StackPanel 
+                    x:Name="sEndingKeySettingStack"
+                    Visibility="Visible"
                     Orientation="Vertical"
                     HorizontalAlignment="Center"
                     Margin="81,0,81,0" Height="120" Width="191"
@@ -289,6 +298,8 @@
                         />
 
                     <Button
+                        Name="btnSelectEndKey"
+                        Visibility="Hidden"
                         Height="22" 
                         Width="90"
                         Content="Select a Key"
