@@ -17,6 +17,7 @@ using AutoHotKey.MacroControllers;
 using AutoHotKey.UserInterfaces;
 using AutoHotKey.MacroControllers.ScreenKeyboard;
 using System.IO;
+using System.Diagnostics;
 
 namespace AutoHotKey
 {

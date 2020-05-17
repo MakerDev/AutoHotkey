@@ -26,7 +26,6 @@ namespace AutoHotKey.UserInterfaces.ScreenKeyboard
     {
         public event EventHandler<ScreenKey> OnKeyClickedWhileEditing;
 
-
         private MacroControllers.ScreenKeyboard.ScreenKeyboard mScreenKeybaord;
         private Dictionary<int, ScreenKey> mDictScreenKeys = new Dictionary<int, ScreenKey>();
 

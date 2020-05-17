@@ -341,7 +341,6 @@ namespace AutoHotKey.MacroControllers
                     }
                 }
 
-
                 //여기서 등록되지 않은 키일 경우를 처리했으므로 아래에서는 무조건 등록된 키에 대한 처리만 하면 됨.
                 //따라서 아래부터는 0이 아닌 값을 리턴해 버려야함.
                 if (!mKeyEventPairs.ContainsKey(currentHotkey))
@@ -396,14 +395,8 @@ namespace AutoHotKey.MacroControllers
 
         }
 
-
-
-
-
         private void OnMouseEventHookOccur(MouseEventArgs e)
         {
-
-
             List<VirtualKeyCode> modifiers = new List<VirtualKeyCode>();
 
             if ((e.Modifier & EModifiers.Ctrl) != 0) { modifiers.Add(VirtualKeyCode.CONTROL); }
@@ -421,6 +414,8 @@ namespace AutoHotKey.MacroControllers
                     return;
 
                 WindowsInput.InputSimulator inputSimulator = new WindowsInput.InputSimulator();
+
+                UpModifiersInternal(modifiers);
 
                 switch (e.Button)
                 {
@@ -441,10 +436,7 @@ namespace AutoHotKey.MacroControllers
 
                     default:
                         break;
-                }
-
-                UpModifiersInternal(modifiers);
-       
+                }      
             }
             else
             {

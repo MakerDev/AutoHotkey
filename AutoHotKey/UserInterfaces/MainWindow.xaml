@@ -86,7 +86,7 @@
 
         <Rectangle Height="1" Fill="Black"/>
 
-        <Grid>
+        <Grid Visibility="Visible">
             <ScrollViewer 
                 Name="scrViewerScreenKeyboards"
                 HorizontalAlignment="Left" 
